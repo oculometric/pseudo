@@ -15,6 +15,7 @@ int main(int argc, const char * argv[]) {
 	// insert code here...
 	//cout << "Hello, World!\n";
 	Variable v = *new Variable ("Testy", Primitive::pstring, "Hello, World!");
-	cout << "Variable is called '" << v.name << "', is of type '" << v.type << "', and has value '" << v.stringValue << "'.\n";
+	//cout << "Variable is called '" << v.name << "', is of type '" << v.type << "', and has value '" << v.stringValue << "'.\n";
+	v.displaySummary();
 	return 0;
 }

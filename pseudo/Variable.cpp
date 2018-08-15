@@ -15,3 +15,7 @@ Variable::Variable (string n, Primitive t, string sv, int iv, bool bv) {
 	intValue = iv;
 	boolValue = bv;
 }
+
+void Variable::displaySummary() {
+	cout << "Variable named: " << name << ". Values: String - " << stringValue << ", Int - " << intValue << ", Bool - " << boolValue << ".\n";
+}

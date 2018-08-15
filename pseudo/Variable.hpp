@@ -10,6 +10,8 @@
 #define Variable_hpp
 
 #include <string>
+#include <iostream>
+//#include <iostream>
 
 using namespace std;
 
@@ -30,6 +32,8 @@ public:
 	Primitive type;
 	
 	Variable (string n, Primitive t, string sv = "", int iv = 0, bool bv = false);
+	
+	void displaySummary ();
 };
 
 #endif /* Variable_hpp */
