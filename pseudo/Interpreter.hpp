@@ -21,7 +21,7 @@ private:
 	string preparedInput;
 	bool isPrepared;
 	
-	vector<string> keywords = {"increment", "decrement", "repeat", "times", "set", "to", "input", "output", "from"};
+	vector<string> keywords = {"increment", "decrement", "repeat", "times", "set", "to", "input", "output", "from", "while"};
 	vector<char> ints = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9'};
 	
 	void interpretLine (string line);

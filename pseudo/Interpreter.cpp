@@ -26,6 +26,22 @@ bool containsString (vector<string> v, string c) {
 	return false;
 }
 
+int intFrom (string s) {
+	int output = 0;
+	int tenMultiplier = 1;
+	for (int i = int(s.size()) - 1; i > -1; i--) {
+		char character = s.at (i);
+		int digit = 0;
+		char ints[10] = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9'};
+		while (ints[digit] != character) {
+			digit++;
+		}
+		output += (tenMultiplier * digit);
+		tenMultiplier *= 10;
+	}
+	return output;
+}
+
 Interpreter::Interpreter (string input) {
 	directInput = input;
 	isPrepared = false;
@@ -99,7 +115,20 @@ Token Interpreter::makeToken (string tokenInput) {
 		}
 		return Token (s, TokenType::stringLiteral);
 	} else if (tokenInput.at (0) == '[') {           // Memory reference
-		
+		string s = "";
+		bool b = false;
+		for (char c : tokenInput) {
+			if (c != ']') {
+				s += c;
+			} else {
+				if (b) {
+					break;
+				}
+				b = true;
+			}
+		}
+		int i = intFrom(s);
+		return Token ("", 0, false, i, "", TokenType::memoryReference);
 	} else if (tokenInput.at (0) == '_') {           // Variable reference
 		string s = "";
 		bool b = false;
@@ -134,8 +163,9 @@ Token Interpreter::makeToken (string tokenInput) {
 		}
 		throw exception();
 	} else if (containsChar (ints, tokenInput.at (0))) { // Integer literal
-		
-	} else if (containsString(keywords, tokenInput)) {   // Token
+		int i = intFrom(tokenInput);
+		return Token ("", i, false, 0, "", TokenType::intLiteral);
+	} else if (containsString(keywords, tokenInput)) {   // Keyword
 		
 	} // Undefined, syntax error.
 	throw exception();
