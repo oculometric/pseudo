@@ -14,5 +14,9 @@ void MemoryManager::setMemoryValue (Token value, int location) {
 }
 
 Token MemoryManager::getMemoryValue (int location) {
-	return memory.at(location);
+	try {
+		return memory.at (location);
+	} catch (exception) {
+		return *new Token ();
+	}
 }

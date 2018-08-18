@@ -7,15 +7,18 @@
 //
 
 #include <iostream>
-#include "Variable.hpp"
+#include "Interpreter.hpp"
 
 using namespace std;
 
 int main(int argc, const char * argv[]) {
 	// insert code here...
 	//cout << "Hello, World!\n";
-	Variable v = *new Variable ("Testy", Primitive::pstring, "Hello, World!");
-	//cout << "Variable is called '" << v.name << "', is of type '" << v.type << "', and has value '" << v.stringValue << "'.\n";
-	v.displaySummary();
+	string code = "increment [0];increment [0];increment [0];output [0];";
+	
+	Interpreter inter = Interpreter(code);
+	inter.prepare();
+	inter.interpret();
+	
 	return 0;
 }

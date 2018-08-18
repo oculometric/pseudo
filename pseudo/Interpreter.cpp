@@ -42,8 +42,20 @@ int intFrom (string s) {
 	return output;
 }
 
+int keywordIndex (Token t) {
+	int ind = 0;
+	for (string s : Interpreter::keywords()) {
+		if (t.stringValue == s) {
+			return ind;
+		}
+		ind++;
+	}
+	throw runtime_error ("Invalid keyword: '" + t.stringValue + "'.");
+}
+
 Interpreter::Interpreter (string input) {
 	directInput = input;
+	memoryManager = *new MemoryManager();
 	isPrepared = false;
 }
 
@@ -72,6 +84,10 @@ void Interpreter::interpret () {
 				lines.at (lineLoc) += c;
 			}
 		}
+		for (string line : lines) {
+			if (line.size() > 0)
+				interpretLine(line);
+		}
 	}
 }
 
@@ -81,10 +97,10 @@ void Interpreter::interpretLine (string line) {
 	tokensString.push_back("");
 	for (char c : line) {
 		if (c != ' ') {
-			tokenLoc++;
 			tokensString.at(tokenLoc) += c;
 		} else {
 			tokensString.push_back("");
+			tokenLoc++;
 		}
 	}
 	
@@ -96,7 +112,14 @@ void Interpreter::interpretLine (string line) {
 		}
 	}
 	
-	// Interpret and execute
+	this->currentLineTokens = tokens;
+	
+	if (tokens.at(0).type == TokenType::keyword) {
+		int loc = keywordIndex (tokens.at(0));
+		keywordFuncPointer.at (loc) (this);
+	} else {
+		throw runtime_error("Expected keyword token, got '" + tokens.at(0).stringValue + "'.");
+	}
 }
 
 Token Interpreter::makeToken (string tokenInput) {
@@ -113,12 +136,12 @@ Token Interpreter::makeToken (string tokenInput) {
 				b = true;
 			}
 		}
-		return Token (s, TokenType::stringLiteral);
+		return *new Token (s, 0, false, 0, "", TokenType::stringLiteral);
 	} else if (tokenInput.at (0) == '[') {           // Memory reference
 		string s = "";
 		bool b = false;
 		for (char c : tokenInput) {
-			if (c != ']') {
+			if (c != ']' && c != '[') {
 				s += c;
 			} else {
 				if (b) {
@@ -128,7 +151,7 @@ Token Interpreter::makeToken (string tokenInput) {
 			}
 		}
 		int i = intFrom(s);
-		return Token ("", 0, false, i, "", TokenType::memoryReference);
+		return *new Token (tokenInput, 0, false, i, "", TokenType::memoryReference);
 	} else if (tokenInput.at (0) == '_') {           // Variable reference
 		string s = "";
 		bool b = false;
@@ -142,7 +165,7 @@ Token Interpreter::makeToken (string tokenInput) {
 				b = true;
 			}
 		}
-		return Token (s, TokenType::variableReference);
+		return *new Token (tokenInput, 0, true, 0, s, TokenType::variableReference);
 	} else if (tokenInput.at (0) == '!') {           // Boolean literal
 		string s = "";
 		bool b = false;
@@ -157,17 +180,111 @@ Token Interpreter::makeToken (string tokenInput) {
 			}
 		}
 		if (s == "true") {
-			return Token ("", 0, true, TokenType::boolLiteral);
+			return *new Token (tokenInput, 0, true, 0, "", TokenType::boolLiteral);
 		} else if (s == "false") {
-			return Token ("", 0, false, TokenType::boolLiteral);
+			return *new Token (tokenInput, 0, false, 0, "", TokenType::boolLiteral);
 		}
 		throw exception();
 	} else if (containsChar (ints, tokenInput.at (0))) { // Integer literal
 		int i = intFrom(tokenInput);
-		return Token ("", i, false, 0, "", TokenType::intLiteral);
-	} else if (containsString(keywords, tokenInput)) {   // Keyword
-		
+		return *new Token (tokenInput, i, false, 0, "", TokenType::intLiteral);
+	} else if (containsString(keywords(), tokenInput)) {   // Keyword
+		return *new Token (tokenInput, 0, false, 0, "", TokenType::keyword);
 	} // Undefined, syntax error.
-	throw exception();
-	return Token();
+	throw runtime_error ("Invalid keyword: '" + tokenInput + "'.");
 }
+
+void Interpreter::kincrement(Interpreter* i) {
+	Token nextToken = i->currentLineTokens.at (1);
+	if (nextToken.type == TokenType::memoryReference) {
+		Token toInc = i->memoryManager.getMemoryValue(nextToken.memoryReference);
+		if (toInc.type == TokenType::undefined) {
+			i->memoryManager.setMemoryValue(Token ("", 1, false, 0, "", TokenType::intLiteral), nextToken.memoryReference);
+		} else if (toInc.type == TokenType::intLiteral) {
+			i->memoryManager.setMemoryValue(Token ("", toInc.intValue + 1, false, 0, "", TokenType::intLiteral), nextToken.memoryReference);
+		}
+	} else if (nextToken.type == TokenType::variableReference) {
+		Variable* v = i->getVariable(nextToken.variableReference);
+		if (v != NULL) {
+			if (v->type == Primitive::pint) {
+				v->intValue += 1;
+			}
+		} else {
+			throw runtime_error ("Reference to undeclared variable after 'increment' keyword.");
+		}
+	} else {
+		throw runtime_error ("Invalid token after 'increment' keyword.");
+	}
+}
+
+void Interpreter::kdecrement(Interpreter* i) {
+	
+}
+
+void Interpreter::krepeat(Interpreter* i) {}
+void Interpreter::kto(Interpreter* i) {}
+void Interpreter::kwhile(Interpreter* i) {}
+void Interpreter::kfrom(Interpreter* i) {}
+void Interpreter::kset(Interpreter* i) {}
+void Interpreter::kinput(Interpreter* i) {}
+void Interpreter::koutput(Interpreter* i) {
+	// Handle any type of token.
+	if (i->currentLineTokens.size() <= 1)
+		throw runtime_error ("Expected data token after " + i->currentLineTokens.at (0).stringValue);
+	for (int tokenRef = 1; tokenRef < i->currentLineTokens.size(); tokenRef++) {
+		Token tok = i->currentLineTokens.at (tokenRef);
+		if (tok.type == TokenType::memoryReference) {
+			tok = i->memoryManager.getMemoryValue(tok.memoryReference);
+		}
+		
+		switch (tok.type) {
+			case keyword:
+				throw runtime_error ("Found unexpected additional keyword: '" + tok.stringValue + "'.");
+				break;
+			case stringLiteral:
+			case undefined:
+				cout << tok.stringValue << endl;
+				break;
+			case intLiteral:
+				cout << tok.intValue << endl;
+				break;
+			case boolLiteral:
+				if (tok.boolValue) {
+					cout << "true" << endl;
+				} else {
+					cout << "false" << endl;
+				}
+				break;
+			case memoryReference:
+				cout << "Oops?" << endl;
+				break;
+			case variableReference:
+				Variable * v = i->getVariable(tok.variableReference);
+				switch (v->type) {
+					case pint:
+						cout << v->intValue << endl;
+						break;
+					case pbool:
+						cout << v->boolValue << endl;
+						break;
+					case pstring:
+						cout << v->stringValue << endl;
+						break;
+				}
+				break;
+		}
+	}
+	
+}
+void Interpreter::ktimes(Interpreter* i) {}
+
+Variable *Interpreter::getVariable(std::string name) { 
+	for (int ref = 0; ref < variables.size(); ref++) {
+		if (variables.at(ref).name == name) {
+			Variable* v = &variables.at(ref);
+			return v;
+		}
+	}
+	return NULL;
+}
+
