@@ -53,6 +53,17 @@ int keywordIndex (Token t) {
 	throw runtime_error ("Invalid keyword: '" + t.stringValue + "'.");
 }
 
+int findFirstKeywordOccurrence (Token t, vector<Token> vec) {
+	int loc = 0;
+	for (Token tc : vec) {
+		if (tc.type == TokenType::keyword && tc.stringValue == t.stringValue) {
+			return loc;
+		}
+		loc++;
+	}
+	return -1;
+}
+
 Interpreter::Interpreter (string input) {
 	directInput = input;
 	memoryManager = *new MemoryManager();
@@ -63,7 +74,7 @@ void Interpreter::prepare () {
 	preparedInput = "";
 	for (char c : directInput) {
 		if (c == '\n') {
-			preparedInput += ' ';
+			preparedInput += ';';
 		} else {
 			preparedInput += c;
 		}
@@ -85,7 +96,7 @@ void Interpreter::interpret () {
 			}
 		}
 		for (string line : lines) {
-			if (line.size() > 0)
+			if (line.size() > 1)
 				interpretLine(line);
 		}
 	}
@@ -95,6 +106,9 @@ void Interpreter::interpretLine (string line) {
 	vector<string> tokensString;
 	int tokenLoc = 0;
 	tokensString.push_back("");
+	
+	int charLoc = 0;
+	
 	for (char c : line) {
 		if (c != ' ') {
 			tokensString.at(tokenLoc) += c;
@@ -102,23 +116,33 @@ void Interpreter::interpretLine (string line) {
 			tokensString.push_back("");
 			tokenLoc++;
 		}
+		charLoc++;
 	}
+	
+	
 	
 	vector<Token> tokens;
 	for (string sToken : tokensString) {
-		Token t = makeToken(sToken);
-		if (t.type != TokenType::undefined) {
-			tokens.push_back(t);
+		if (sToken.size() > 1) {
+			if (!(sToken.at (0) == '/' && sToken.at(1) == '/')) {
+				Token t = makeToken(sToken);
+				if (t.type != TokenType::undefined) {
+					tokens.push_back(t);
+				}
+			} else {
+				break;
+			}
 		}
 	}
 	
 	this->currentLineTokens = tokens;
-	
-	if (tokens.at(0).type == TokenType::keyword) {
-		int loc = keywordIndex (tokens.at(0));
-		keywordFuncPointer.at (loc) (this);
-	} else {
-		throw runtime_error("Expected keyword token, got '" + tokens.at(0).stringValue + "'.");
+	if (tokens.size() > 0) {
+		if (tokens.at(0).type == TokenType::keyword) {
+			int loc = keywordIndex (tokens.at(0));
+			keywordFuncPointer.at (loc) (this);
+		} else {
+			throw runtime_error("Expected keyword token, got '" + tokens.at(0).stringValue + "'.");
+		}
 	}
 }
 
@@ -218,14 +242,55 @@ void Interpreter::kincrement(Interpreter* i) {
 }
 
 void Interpreter::kdecrement(Interpreter* i) {
+	Token nextToken = i->currentLineTokens.at (1);
+	if (nextToken.type == TokenType::memoryReference) {
+		Token toInc = i->memoryManager.getMemoryValue(nextToken.memoryReference);
+		if (toInc.type == TokenType::undefined) {
+			i->memoryManager.setMemoryValue(Token ("", -1, false, 0, "", TokenType::intLiteral), nextToken.memoryReference);
+		} else if (toInc.type == TokenType::intLiteral) {
+			i->memoryManager.setMemoryValue(Token ("", toInc.intValue - 1, false, 0, "", TokenType::intLiteral), nextToken.memoryReference);
+		}
+	} else if (nextToken.type == TokenType::variableReference) {
+		Variable* v = i->getVariable(nextToken.variableReference);
+		if (v != NULL) {
+			if (v->type == Primitive::pint) {
+				v->intValue -= 1;
+			}
+		} else {
+			throw runtime_error ("Reference to undeclared variable after 'decrement' keyword.");
+		}
+	} else {
+		throw runtime_error ("Invalid token after 'decrement' keyword.");
+	}
+}
+
+void Interpreter::kset(Interpreter* i) {
+	int toLoc = findFirstKeywordOccurrence(*new Token ("to"), i->currentLineTokens);
+	if (toLoc == -1) {
+		throw runtime_error ("Could not locate 'to' keyword to assign new value.");
+	}
+	if (toLoc < 2) {
+		throw runtime_error ("Keyword 'to' found instead of required reference value.");
+	}
+	if (toLoc == i->currentLineTokens.size()-1) {
+		throw runtime_error ("No new assignment value found after 'to' token.");
+	}
+	vector<Token> assignees;
+	for (int tmp = 1; tmp < toLoc; tmp++) {
+		assignees.push_back(i->currentLineTokens.at(tmp));
+	}
+	Token newValue = i->currentLineTokens.at (toLoc + 1);
 	
+	// Assign new value to all assignees
+	for (Token assignee : assignees) {
+		
+	}
 }
 
 void Interpreter::krepeat(Interpreter* i) {}
 void Interpreter::kto(Interpreter* i) {}
 void Interpreter::kwhile(Interpreter* i) {}
 void Interpreter::kfrom(Interpreter* i) {}
-void Interpreter::kset(Interpreter* i) {}
 void Interpreter::kinput(Interpreter* i) {}
 void Interpreter::koutput(Interpreter* i) {
 	// Handle any type of token.
