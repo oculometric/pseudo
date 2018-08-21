@@ -43,6 +43,8 @@ private:
 	static void kfrom (Interpreter* i);
 	static void kwhile (Interpreter* i);
 	
+	void assignMemoryValueInternal (Token assignee, Token newValue, Interpreter* i);
+	void assignVariableValueInternal (string assigneeName, Token newValue, Interpreter* i);
 	Variable* getVariable (string name);
 public:
 	static const vector<string> keywords () {

@@ -19,6 +19,7 @@ enum Primitive {
 	pint,
 	pstring,
 	pbool,
+	pundefined
 };
 
 class Variable {

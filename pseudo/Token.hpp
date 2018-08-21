@@ -14,11 +14,11 @@
 using namespace std;
 
 enum TokenType {
+	intLiteral,
+	stringLiteral,
+	boolLiteral,
 	undefined,
 	keyword,
-	stringLiteral,
-	intLiteral,
-	boolLiteral,
 	memoryReference,
 	variableReference
 };

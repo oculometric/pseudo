@@ -8,6 +8,31 @@
 
 #include "Interpreter.hpp"
 
+string replaceAll (const string orig, const string search, const string replace) {
+	if (search.size() > orig.size() || replace.size() > orig.size()) {
+		throw runtime_error ("Search string cannot be longer than original string.");
+	}
+	
+	string output = orig;
+	
+	string::size_type n = 0;
+	
+	while ((n = output.find(search, n)) != string::npos) {
+		output.replace(n, search.size(), replace);
+		n += replace.size();
+	}
+	
+	return output;
+}
+
+string substring (string orig, int start, int end) {
+	string newStr;
+	for (int i = start; i <= end; i++) {
+		newStr += orig.at(i);
+	}
+	return newStr;
+}
+
 bool containsChar (vector<char> v, char c) {
 	for (char cc : v) {
 		if (cc == c) {
@@ -64,6 +89,26 @@ int findFirstKeywordOccurrence (Token t, vector<Token> vec) {
 	return -1;
 }
 
+vector<string> split (string input, char regex) {
+	vector<string> ret;
+	int loc = 0;
+	ret.push_back("");
+	
+	int charLoc = 0;
+	
+	for (char c : input) {
+		if (c != regex) {
+			ret.at(loc) += c;
+		} else {
+			ret.push_back("");
+			loc++;
+		}
+		charLoc++;
+	}
+	
+	return ret;
+}
+
 Interpreter::Interpreter (string input) {
 	directInput = input;
 	memoryManager = *new MemoryManager();
@@ -79,6 +124,21 @@ void Interpreter::prepare () {
 			preparedInput += c;
 		}
 	}
+	
+	string tmp = preparedInput;
+	preparedInput = "";
+	
+	vector<string> parts = split (tmp, '\"');
+	
+	for (int loc = 0; loc < parts.size(); loc++) {
+			if (loc % 2 != 0) {
+				if (parts.at (loc).size() > 0)
+					preparedInput += "\"" + replaceAll(parts.at(loc), " ", "\\_") + "\"";
+			} else {
+				preparedInput += parts.at(loc);
+			}
+	}
+	
 	isPrepared = true;
 }
 
@@ -119,16 +179,13 @@ void Interpreter::interpretLine (string line) {
 		charLoc++;
 	}
 	
-	
-	
 	vector<Token> tokens;
 	for (string sToken : tokensString) {
-		if (sToken.size() > 1) {
-			if (!(sToken.at (0) == '/' && sToken.at(1) == '/')) {
+		if (sToken.size() > 0) {
+			if (!(sToken.size() > 1 && sToken.at (0) == '/' && sToken.at(1) == '/')) {
 				Token t = makeToken(sToken);
-				if (t.type != TokenType::undefined) {
-					tokens.push_back(t);
-				}
+				if (t.type == TokenType::stringLiteral) {t.stringValue = replaceAll(t.stringValue, "\\_", " ");}
+				tokens.push_back(t);
 			} else {
 				break;
 			}
@@ -214,6 +271,8 @@ Token Interpreter::makeToken (string tokenInput) {
 		return *new Token (tokenInput, i, false, 0, "", TokenType::intLiteral);
 	} else if (containsString(keywords(), tokenInput)) {   // Keyword
 		return *new Token (tokenInput, 0, false, 0, "", TokenType::keyword);
+	} else if (tokenInput == "NULL") {
+		return *new Token ();
 	} // Undefined, syntax error.
 	throw runtime_error ("Invalid keyword: '" + tokenInput + "'.");
 }
@@ -257,7 +316,7 @@ void Interpreter::kdecrement(Interpreter* i) {
 				v->intValue -= 1;
 			}
 		} else {
-			throw runtime_error ("Reference to undeclared variable after 'decrement' keyword.");
+			throw runtime_error ("Reference to undeclared variable '" + nextToken.variableReference + "' after 'decrement' keyword.");
 		}
 	} else {
 		throw runtime_error ("Invalid token after 'decrement' keyword.");
@@ -283,10 +342,103 @@ void Interpreter::kset(Interpreter* i) {
 	
 	// Assign new value to all assignees
 	for (Token assignee : assignees) {
-		
+		if (assignee.type == TokenType::memoryReference) {
+			i->assignMemoryValueInternal(assignee, newValue, i);
+		} else if (assignee.type == TokenType::variableReference) {
+			i->assignVariableValueInternal(assignee.variableReference, newValue, i);
+		} else {throw runtime_error ("Token '" + assignee.stringValue + "' after 'set' keyword is not assignable.");}
 	}
 }
 
+void Interpreter::assignVariableValueInternal (string assigneeName, Token newValue, Interpreter* i) {
+	Variable * assignee = i->getVariable(assigneeName);
+	Token realNewMemoryValue = i->memoryManager.getMemoryValue(newValue.memoryReference);
+	Variable * realNewVariableValue = i->getVariable(newValue.variableReference);
+	if (assignee == NULL) {
+		i->variables.push_back(*new Variable (assigneeName, Primitive::pundefined, "", 0, false));
+	}
+	if ((assignee->type == newValue.type) || (assignee->type == realNewMemoryValue.type) || (realNewVariableValue != NULL && assignee->type == realNewVariableValue->type)) {
+		switch (newValue.type) {
+			case undefined:
+				break;
+			case keyword:
+				throw runtime_error ("Cannot assign a keyword to a memory reference");
+				break;
+			case stringLiteral:
+				assignee->stringValue = newValue.stringValue;
+				break;
+			case intLiteral:
+				assignee->stringValue = newValue.stringValue;
+				break;
+			case boolLiteral:
+				assignee->stringValue = newValue.stringValue;
+				break;
+			case memoryReference:
+				i->assignVariableValueInternal(assigneeName, realNewMemoryValue, i);
+				break;
+			case variableReference:
+				if (realNewVariableValue != NULL) {
+					if (realNewVariableValue->type == Primitive::pint) {
+						assignee->intValue = realNewVariableValue->intValue;
+					} else if (realNewVariableValue->type == Primitive::pstring) {
+						assignee->stringValue = realNewVariableValue->stringValue;
+					} else if (realNewVariableValue->type == Primitive::pbool) {
+						assignee->boolValue = realNewVariableValue->boolValue;
+					} else {
+						assignee = realNewVariableValue;
+					}
+				} else {
+					throw runtime_error ("Reference to undeclared variable '" + newValue.variableReference + "' after 'to' keyword.");
+				}
+				break;
+		}
+	} else {throw runtime_error ("Token '" + newValue.stringValue + "' cannot be assigned to an unmatching typed reference.");}
+}
+
+void Interpreter::assignMemoryValueInternal (Token assignee, Token newValue, Interpreter* i) {
+	Token realAssignee = i->memoryManager.getMemoryValue(assignee.memoryReference);
+	Token realNewMemoryValue = i->memoryManager.getMemoryValue(newValue.memoryReference);
+	Variable * realNewVariableValue = i->getVariable(newValue.variableReference);
+	if ((realAssignee.type == newValue.type) || (realAssignee.type == TokenType::undefined)  || (realAssignee.type == realNewMemoryValue.type) || (realNewVariableValue != NULL && realAssignee.type == realNewVariableValue->type)) {
+		int memoryRef = assignee.memoryReference;
+		switch (newValue.type) {
+			case undefined:
+				i->memoryManager.setMemoryValue(*new Token (), memoryRef);
+				break;
+			case keyword:
+				throw runtime_error ("Cannot assign a keyword to a memory reference");
+				break;
+			case stringLiteral:
+				i->memoryManager.setMemoryValue(*new Token (newValue.stringValue, 0, false, 0, "", TokenType::stringLiteral), memoryRef);
+				break;
+			case intLiteral:
+				i->memoryManager.setMemoryValue(*new Token ("", newValue.intValue, false, 0, "", TokenType::intLiteral), memoryRef);
+				break;
+			case boolLiteral:
+				i->memoryManager.setMemoryValue(*new Token ("", 0, newValue.boolValue, 0, "", TokenType::boolLiteral), memoryRef);
+				break;
+			case memoryReference:
+				i->assignMemoryValueInternal(assignee, realNewMemoryValue, i);
+				break;
+			case variableReference:
+				if (realNewVariableValue != NULL) {
+					if (realNewVariableValue->type == Primitive::pint) {
+						i->memoryManager.setMemoryValue(*new Token ("", realNewVariableValue->intValue, false, 0, "", TokenType::intLiteral), memoryRef);
+					} else if (realNewVariableValue->type == Primitive::pstring) {
+						i->memoryManager.setMemoryValue(*new Token (realNewVariableValue->stringValue, 0, false, 0, "", TokenType::stringLiteral), memoryRef);
+					} else if (realNewVariableValue->type == Primitive::pbool) {
+						i->memoryManager.setMemoryValue(*new Token ("", 0, realNewVariableValue->boolValue, 0, "", TokenType::boolLiteral), memoryRef);
+					} else {
+						i->memoryManager.setMemoryValue(*new Token (realNewVariableValue->stringValue, realNewVariableValue->intValue, realNewVariableValue->boolValue, 0, "", TokenType::boolLiteral), memoryRef);
+					}
+				} else {
+					throw runtime_error ("Reference to undeclared variable '" + newValue.variableReference + "' after 'to' keyword.");
+				}
+				break;
+		}
+	} else {throw runtime_error ("Token '" + newValue.stringValue + "' cannot be assigned to an unmatching typed reference.");}
+}
+									 
 void Interpreter::krepeat(Interpreter* i) {}
 void Interpreter::kto(Interpreter* i) {}
 void Interpreter::kwhile(Interpreter* i) {}
@@ -295,7 +447,7 @@ void Interpreter::kinput(Interpreter* i) {}
 void Interpreter::koutput(Interpreter* i) {
 	// Handle any type of token.
 	if (i->currentLineTokens.size() <= 1)
-		throw runtime_error ("Expected data token after " + i->currentLineTokens.at (0).stringValue);
+		throw runtime_error ("Expected data token after '" + i->currentLineTokens.at (0).stringValue + "' token.");
 	for (int tokenRef = 1; tokenRef < i->currentLineTokens.size(); tokenRef++) {
 		Token tok = i->currentLineTokens.at (tokenRef);
 		if (tok.type == TokenType::memoryReference) {

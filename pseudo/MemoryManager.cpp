@@ -9,7 +9,8 @@
 #include "MemoryManager.hpp"
 
 void MemoryManager::setMemoryValue (Token value, int location) {
-	memory.resize(location + 1);
+	if (location >= memory.size())
+		memory.resize(location + 1);
 	memory.at (location) = value;
 }
 
