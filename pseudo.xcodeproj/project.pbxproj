@@ -37,7 +37,8 @@
 		A89F90B0211C3237002AB302 /* Token.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = Token.hpp; sourceTree = "<group>"; };
 		A89F90B2211C350F002AB302 /* Variable.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = Variable.cpp; sourceTree = "<group>"; };
 		A89F90B3211C350F002AB302 /* Variable.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = Variable.hpp; sourceTree = "<group>"; };
-		A8E19F2E212B2462001B492E /* code.pso */ = {isa = PBXFileReference; lastKnownFileType = text; path = code.pso; sourceTree = "<group>"; };
+		A8AB6BD7212E06F000ABEB05 /* code5.pso */ = {isa = PBXFileReference; lastKnownFileType = text; path = code5.pso; sourceTree = "<group>"; };
+		A8E19F2E212B2462001B492E /* code4.pso */ = {isa = PBXFileReference; lastKnownFileType = text; path = code4.pso; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -70,7 +71,8 @@
 		A89F90A7211C320C002AB302 /* pseudo */ = {
 			isa = PBXGroup;
 			children = (
-				A8E19F2E212B2462001B492E /* code.pso */,
+				A8E19F2E212B2462001B492E /* code4.pso */,
+				A8AB6BD7212E06F000ABEB05 /* code5.pso */,
 				A89F90A8211C320C002AB302 /* main.cpp */,
 				A86D3FA8211DD0D100794FED /* Interpreter.cpp */,
 				A86D3FA9211DD0D100794FED /* Interpreter.hpp */,
@@ -265,6 +267,8 @@
 			buildSettings = {
 				CODE_SIGN_STYLE = Automatic;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				SHOULD_RECEIVE_FILE_FROM_CMDINPUT = NO;
+				SYMROOT = build;
 			};
 			name = Debug;
 		};
@@ -273,6 +277,8 @@
 			buildSettings = {
 				CODE_SIGN_STYLE = Automatic;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				SHOULD_RECEIVE_FILE_FROM_CMDINPUT = YES;
+				SYMROOT = build;
 			};
 			name = Release;
 		};

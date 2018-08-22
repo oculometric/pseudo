@@ -7,7 +7,7 @@ increment [0];
 output [0] [1] [2];
 output "We will now clear all the values in memory, and try setting one to a different value type.";
 
-set [0] to NULL;
+set [0] [1] [2] to NULL;
 set [0] to "And for my next trick?";
 
 output [0] "There we go!";

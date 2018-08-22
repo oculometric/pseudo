@@ -20,10 +20,11 @@ private:
 	string directInput;
 	string preparedInput;
 	bool isPrepared;
-	MemoryManager memoryManager;
-	vector<Variable> variables;
-	
+	MemoryManager *memoryManager;
+	vector<Variable> *variables;
+	int lineRef;
 	vector<Token> currentLineTokens;
+	vector<string> lines;
 	
 	const vector<void (*)(Interpreter* i)> keywordFuncPointer = {kincrement, kdecrement, krepeat, ktimes, kset, kto, kinput, koutput, kfrom, kwhile};
 	vector<char> ints = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9'};
@@ -51,11 +52,22 @@ public:
 		return vector<string> ({"increment", "decrement", "repeat", "times", "set", "to", "input", "output", "from", "while"});
 	}
 
-	Interpreter (string input);
+	Interpreter (string input, MemoryManager *mm, vector<Variable> *vars);
 	
 	void prepare ();
 	
 	void interpret ();
 };
+
+string replaceAll (const string orig, const string search, const string replace);
+string substring (string orig, int start, int end);
+bool containsChar (vector<char> v, char c);
+bool containsChar (string v, char c);
+bool containsString (vector<string> v, string c);
+int intFrom (string s);
+int keywordIndex (Token t);
+int findFirstKeywordOccurrence (Token t, vector<Token> vec);
+vector<string> split (string input, char regex);
+string readEntireTextFile (string path);
 
 #endif /* Interpreter_hpp */

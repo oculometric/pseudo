@@ -6,6 +6,8 @@
 //  Copyright © 2018 Javax Inc. All rights reserved.
 //
 
+#include <fstream>
+
 #include "Interpreter.hpp"
 
 string replaceAll (const string orig, const string search, const string replace) {
@@ -34,6 +36,15 @@ string substring (string orig, int start, int end) {
 }
 
 bool containsChar (vector<char> v, char c) {
+	for (char cc : v) {
+		if (cc == c) {
+			return true;
+		}
+	}
+	return false;
+}
+
+bool containsChar (string v, char c) {
 	for (char cc : v) {
 		if (cc == c) {
 			return true;
@@ -109,9 +120,40 @@ vector<string> split (string input, char regex) {
 	return ret;
 }
 
-Interpreter::Interpreter (string input) {
+string readEntireTextFile (string path) {
+	string output;
+	string line;
+	
+	ifstream file;
+	file.open(path);
+	
+	string last3 = substring(path, int(path.size())-4, int (path.size()-1));
+	
+	if (file.is_open() && last3 == ".pso") {
+		while (getline(file, line))
+			output += line + "\n";
+		file.close();
+	} else {
+		throw runtime_error ("Specified file '" + path + "' cannot be opened.");
+	}
+	
+	return output;
+}
+
+Variable *Interpreter::getVariable(std::string name) {
+	for (int ref = 0; ref < variables->size(); ref++) {
+		if (variables->at(ref).name == name) {
+			Variable* v = &variables->at(ref);
+			return v;
+		}
+	}
+	return NULL;
+}
+
+Interpreter::Interpreter (string input, MemoryManager *mm, vector<Variable> *vars) {
 	directInput = input;
-	memoryManager = *new MemoryManager();
+	memoryManager = mm;
+	variables = vars;
 	isPrepared = false;
 }
 
@@ -120,6 +162,7 @@ void Interpreter::prepare () {
 	for (char c : directInput) {
 		if (c == '\n') {
 			preparedInput += ';';
+		} else if (c == '\t') {
 		} else {
 			preparedInput += c;
 		}
@@ -139,12 +182,13 @@ void Interpreter::prepare () {
 			}
 	}
 	
+	lineRef = 0;
 	isPrepared = true;
 }
 
 void Interpreter::interpret () {
 	if (isPrepared) {
-		vector<string> lines;
+		lines = {};
 		int lineLoc = 0;
 		lines.push_back("");
 		for (char c : preparedInput) {
@@ -155,9 +199,11 @@ void Interpreter::interpret () {
 				lines.at (lineLoc) += c;
 			}
 		}
-		for (string line : lines) {
+		while (lineRef < lines.size()) {
+			string line = lines.at(lineRef);
 			if (line.size() > 1)
 				interpretLine(line);
+			lineRef++;
 		}
 	}
 }
@@ -273,6 +319,10 @@ Token Interpreter::makeToken (string tokenInput) {
 		return *new Token (tokenInput, 0, false, 0, "", TokenType::keyword);
 	} else if (tokenInput == "NULL") {
 		return *new Token ();
+	} else if (tokenInput == "{") {
+		return *new Token (tokenInput);
+	} else if (tokenInput == "}") {
+		return *new Token (tokenInput);
 	} // Undefined, syntax error.
 	throw runtime_error ("Invalid keyword: '" + tokenInput + "'.");
 }
@@ -280,11 +330,11 @@ Token Interpreter::makeToken (string tokenInput) {
 void Interpreter::kincrement(Interpreter* i) {
 	Token nextToken = i->currentLineTokens.at (1);
 	if (nextToken.type == TokenType::memoryReference) {
-		Token toInc = i->memoryManager.getMemoryValue(nextToken.memoryReference);
+		Token toInc = i->memoryManager->getMemoryValue(nextToken.memoryReference);
 		if (toInc.type == TokenType::undefined) {
-			i->memoryManager.setMemoryValue(Token ("", 1, false, 0, "", TokenType::intLiteral), nextToken.memoryReference);
+			i->memoryManager->setMemoryValue(Token ("", 1, false, 0, "", TokenType::intLiteral), nextToken.memoryReference);
 		} else if (toInc.type == TokenType::intLiteral) {
-			i->memoryManager.setMemoryValue(Token ("", toInc.intValue + 1, false, 0, "", TokenType::intLiteral), nextToken.memoryReference);
+			i->memoryManager->setMemoryValue(Token ("", toInc.intValue + 1, false, 0, "", TokenType::intLiteral), nextToken.memoryReference);
 		}
 	} else if (nextToken.type == TokenType::variableReference) {
 		Variable* v = i->getVariable(nextToken.variableReference);
@@ -303,11 +353,11 @@ void Interpreter::kincrement(Interpreter* i) {
 void Interpreter::kdecrement(Interpreter* i) {
 	Token nextToken = i->currentLineTokens.at (1);
 	if (nextToken.type == TokenType::memoryReference) {
-		Token toInc = i->memoryManager.getMemoryValue(nextToken.memoryReference);
+		Token toInc = i->memoryManager->getMemoryValue(nextToken.memoryReference);
 		if (toInc.type == TokenType::undefined) {
-			i->memoryManager.setMemoryValue(Token ("", -1, false, 0, "", TokenType::intLiteral), nextToken.memoryReference);
+			i->memoryManager->setMemoryValue(Token ("", -1, false, 0, "", TokenType::intLiteral), nextToken.memoryReference);
 		} else if (toInc.type == TokenType::intLiteral) {
-			i->memoryManager.setMemoryValue(Token ("", toInc.intValue - 1, false, 0, "", TokenType::intLiteral), nextToken.memoryReference);
+			i->memoryManager->setMemoryValue(Token ("", toInc.intValue - 1, false, 0, "", TokenType::intLiteral), nextToken.memoryReference);
 		}
 	} else if (nextToken.type == TokenType::variableReference) {
 		Variable* v = i->getVariable(nextToken.variableReference);
@@ -352,12 +402,13 @@ void Interpreter::kset(Interpreter* i) {
 
 void Interpreter::assignVariableValueInternal (string assigneeName, Token newValue, Interpreter* i) {
 	Variable * assignee = i->getVariable(assigneeName);
-	Token realNewMemoryValue = i->memoryManager.getMemoryValue(newValue.memoryReference);
+	Token realNewMemoryValue = i->memoryManager->getMemoryValue(newValue.memoryReference);
 	Variable * realNewVariableValue = i->getVariable(newValue.variableReference);
 	if (assignee == NULL) {
-		i->variables.push_back(*new Variable (assigneeName, Primitive::pundefined, "", 0, false));
+		i->variables->push_back(*new Variable (assigneeName, Primitive::pundefined, "", 0, false));
+		assignee = i->getVariable(assigneeName);
 	}
-	if ((assignee->type == newValue.type) || (assignee->type == realNewMemoryValue.type) || (realNewVariableValue != NULL && assignee->type == realNewVariableValue->type)) {
+	if ((assignee->type == Primitive::pundefined) || (assignee->type == newValue.type) || (assignee->type == realNewMemoryValue.type) || (realNewVariableValue != NULL && assignee->type == realNewVariableValue->type)) {
 		switch (newValue.type) {
 			case undefined:
 				break;
@@ -366,12 +417,15 @@ void Interpreter::assignVariableValueInternal (string assigneeName, Token newVal
 				break;
 			case stringLiteral:
 				assignee->stringValue = newValue.stringValue;
+				assignee->type = Primitive::pstring;
 				break;
 			case intLiteral:
-				assignee->stringValue = newValue.stringValue;
+				assignee->intValue = newValue.intValue;
+				assignee->type = Primitive::pint;
 				break;
 			case boolLiteral:
-				assignee->stringValue = newValue.stringValue;
+				assignee->boolValue = newValue.boolValue;
+				assignee->type = Primitive::pbool;
 				break;
 			case memoryReference:
 				i->assignVariableValueInternal(assigneeName, realNewMemoryValue, i);
@@ -396,26 +450,26 @@ void Interpreter::assignVariableValueInternal (string assigneeName, Token newVal
 }
 
 void Interpreter::assignMemoryValueInternal (Token assignee, Token newValue, Interpreter* i) {
-	Token realAssignee = i->memoryManager.getMemoryValue(assignee.memoryReference);
-	Token realNewMemoryValue = i->memoryManager.getMemoryValue(newValue.memoryReference);
+	Token realAssignee = i->memoryManager->getMemoryValue(assignee.memoryReference);
+	Token realNewMemoryValue = i->memoryManager->getMemoryValue(newValue.memoryReference);
 	Variable * realNewVariableValue = i->getVariable(newValue.variableReference);
-	if ((realAssignee.type == newValue.type) || (realAssignee.type == TokenType::undefined)  || (realAssignee.type == realNewMemoryValue.type) || (realNewVariableValue != NULL && realAssignee.type == realNewVariableValue->type)) {
+	if ((realAssignee.type == newValue.type) || (realAssignee.type == TokenType::undefined)  || (realAssignee.type == realNewMemoryValue.type) || (realNewVariableValue != NULL && realAssignee.type == realNewVariableValue->type) || (newValue.type == TokenType::undefined)) {
 		int memoryRef = assignee.memoryReference;
 		switch (newValue.type) {
 			case undefined:
-				i->memoryManager.setMemoryValue(*new Token (), memoryRef);
+				i->memoryManager->setMemoryValue(*new Token (), memoryRef);
 				break;
 			case keyword:
 				throw runtime_error ("Cannot assign a keyword to a memory reference");
 				break;
 			case stringLiteral:
-				i->memoryManager.setMemoryValue(*new Token (newValue.stringValue, 0, false, 0, "", TokenType::stringLiteral), memoryRef);
+				i->memoryManager->setMemoryValue(*new Token (newValue.stringValue, 0, false, 0, "", TokenType::stringLiteral), memoryRef);
 				break;
 			case intLiteral:
-				i->memoryManager.setMemoryValue(*new Token ("", newValue.intValue, false, 0, "", TokenType::intLiteral), memoryRef);
+				i->memoryManager->setMemoryValue(*new Token ("", newValue.intValue, false, 0, "", TokenType::intLiteral), memoryRef);
 				break;
 			case boolLiteral:
-				i->memoryManager.setMemoryValue(*new Token ("", 0, newValue.boolValue, 0, "", TokenType::boolLiteral), memoryRef);
+				i->memoryManager->setMemoryValue(*new Token ("", 0, newValue.boolValue, 0, "", TokenType::boolLiteral), memoryRef);
 				break;
 			case memoryReference:
 				i->assignMemoryValueInternal(assignee, realNewMemoryValue, i);
@@ -423,13 +477,13 @@ void Interpreter::assignMemoryValueInternal (Token assignee, Token newValue, Int
 			case variableReference:
 				if (realNewVariableValue != NULL) {
 					if (realNewVariableValue->type == Primitive::pint) {
-						i->memoryManager.setMemoryValue(*new Token ("", realNewVariableValue->intValue, false, 0, "", TokenType::intLiteral), memoryRef);
+						i->memoryManager->setMemoryValue(*new Token ("", realNewVariableValue->intValue, false, 0, "", TokenType::intLiteral), memoryRef);
 					} else if (realNewVariableValue->type == Primitive::pstring) {
-						i->memoryManager.setMemoryValue(*new Token (realNewVariableValue->stringValue, 0, false, 0, "", TokenType::stringLiteral), memoryRef);
+						i->memoryManager->setMemoryValue(*new Token (realNewVariableValue->stringValue, 0, false, 0, "", TokenType::stringLiteral), memoryRef);
 					} else if (realNewVariableValue->type == Primitive::pbool) {
-						i->memoryManager.setMemoryValue(*new Token ("", 0, realNewVariableValue->boolValue, 0, "", TokenType::boolLiteral), memoryRef);
+						i->memoryManager->setMemoryValue(*new Token ("", 0, realNewVariableValue->boolValue, 0, "", TokenType::boolLiteral), memoryRef);
 					} else {
-						i->memoryManager.setMemoryValue(*new Token (realNewVariableValue->stringValue, realNewVariableValue->intValue, realNewVariableValue->boolValue, 0, "", TokenType::boolLiteral), memoryRef);
+						i->memoryManager->setMemoryValue(*new Token (realNewVariableValue->stringValue, realNewVariableValue->intValue, realNewVariableValue->boolValue, 0, "", TokenType::boolLiteral), memoryRef);
 					}
 				} else {
 					throw runtime_error ("Reference to undeclared variable '" + newValue.variableReference + "' after 'to' keyword.");
@@ -439,7 +493,64 @@ void Interpreter::assignMemoryValueInternal (Token assignee, Token newValue, Int
 	} else {throw runtime_error ("Token '" + newValue.stringValue + "' cannot be assigned to an unmatching typed reference.");}
 }
 									 
-void Interpreter::krepeat(Interpreter* i) {}
+void Interpreter::krepeat(Interpreter* i) {
+	// Calculate required number of iterations
+	Token numTimesTok = i->currentLineTokens.at(1);
+	int numTimes = 0;
+	if (numTimesTok.type == TokenType::intLiteral) {
+		numTimes = numTimesTok.intValue;
+	} else if (numTimesTok.type == TokenType::memoryReference) {
+		Token realToken = i->memoryManager->getMemoryValue(numTimesTok.memoryReference);
+		if (realToken.type == TokenType::intLiteral) {
+			numTimes = realToken.intValue;
+		} else {
+			throw runtime_error ("Keyword token 'repeat' requires integer as iteration count specifier.");
+		}
+	} else if (numTimesTok.type == TokenType::variableReference) {
+		Variable *realToken = i->getVariable(numTimesTok.variableReference);
+		if (realToken->type == Primitive::pint) {
+			numTimes = realToken->intValue;
+		} else {
+			throw runtime_error ("Keyword token 'repeat' requires integer as iteration count specifier.");
+		}
+	} else {
+		throw runtime_error ("Keyword token 'repeat' requires integer as iteration count specifier.");
+	}
+	
+	// Find lines to execute
+	if (!(i->currentLineTokens.at (2).stringValue == "times")) {
+		throw runtime_error("Expected 'times' after iteration count specifier.");
+	}
+	
+	if (!(i->currentLineTokens.at (3).stringValue == "{")) {
+		throw runtime_error("Expected '{' after 'times' token.");
+	}
+	
+	string subExecutionLines;
+	
+	int loc = i->lineRef+1;
+	
+	while (loc < i->lines.size()) {
+		if ((i->lines.at (loc).size() > 0) &&(i->lines.at (loc)).at(0) == '}') {
+			break;
+		} else {
+			subExecutionLines += i->lines.at (loc) + ";";
+		}
+		loc++;
+	}
+	
+	// Execute lines
+	while (numTimes > 0) {
+		Interpreter nextI = *new Interpreter (subExecutionLines, i->memoryManager, i->variables);
+		nextI.prepare();
+	
+		nextI.interpret();
+		numTimes--;
+	}
+	
+	// Increment line counter to be aligned with closing brace
+	i->lineRef = loc;
+}
 void Interpreter::kto(Interpreter* i) {}
 void Interpreter::kwhile(Interpreter* i) {}
 void Interpreter::kfrom(Interpreter* i) {}
@@ -451,7 +562,7 @@ void Interpreter::koutput(Interpreter* i) {
 	for (int tokenRef = 1; tokenRef < i->currentLineTokens.size(); tokenRef++) {
 		Token tok = i->currentLineTokens.at (tokenRef);
 		if (tok.type == TokenType::memoryReference) {
-			tok = i->memoryManager.getMemoryValue(tok.memoryReference);
+			tok = i->memoryManager->getMemoryValue(tok.memoryReference);
 		}
 		
 		switch (tok.type) {
@@ -487,6 +598,9 @@ void Interpreter::koutput(Interpreter* i) {
 					case pstring:
 						cout << v->stringValue << endl;
 						break;
+					case pundefined:
+						cout << v->stringValue << v->intValue << v->boolValue << endl;
+						break;
 				}
 				break;
 		}
@@ -494,14 +608,3 @@ void Interpreter::koutput(Interpreter* i) {
 	
 }
 void Interpreter::ktimes(Interpreter* i) {}
-
-Variable *Interpreter::getVariable(std::string name) { 
-	for (int ref = 0; ref < variables.size(); ref++) {
-		if (variables.at(ref).name == name) {
-			Variable* v = &variables.at(ref);
-			return v;
-		}
-	}
-	return NULL;
-}
-
