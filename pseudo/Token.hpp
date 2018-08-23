@@ -10,6 +10,7 @@
 #define Token_hpp
 
 #include <fstream>
+#include <sstream>
 #include <string>
 #include <vector>
 

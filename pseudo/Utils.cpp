@@ -10,7 +10,8 @@
 
 string replaceAll (const string orig, const string search, const string replace) {
 	if (search.size() > orig.size() || replace.size() > orig.size()) {
-		throw runtime_error ("Search string cannot be longer than original string.");
+		return orig;
+		//throw runtime_error ("Search string cannot be longer than original string.");
 	}
 	
 	string output = orig;

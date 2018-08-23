@@ -1,6 +1,11 @@
 set _num_ to 5;        // Declare a variable to say how many times to iterate the calls.
 set _value_ to 0;      // Declare a variable to keep track of our calls.
 
+input "Enter your name: " to _name_;           // Get the user's name
+
+output "Welcome, " _name_ "." to _testOutput_; // Make a greeting
+output _testOutput_;                           // Send it to the screen
+
 repeat _num_ times {   // Repeat the statements in brackets a certain number of times.
 	increment _value_; // Increment the value we stored.
 	output _value_;    // Display the value we have reached so far.

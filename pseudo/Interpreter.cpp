@@ -186,7 +186,7 @@ Token Interpreter::makeToken (string tokenInput) {
 	} else if (containsString(keywords(), tokenInput)) {   // Keyword
 		return *new Token (tokenInput, 0, false, 0, "", TokenType::keyword);
 	} else if (tokenInput == "NULL") {
-		return *new Token ();
+		return *new Token ("NULL");
 	} else if (tokenInput == "{") {
 		return *new Token (tokenInput);
 	} else if (tokenInput == "}") {
@@ -424,8 +424,30 @@ void Interpreter::koutput(Interpreter* i) {
 	// Handle any type of token.
 	if (i->currentLineTokens.size() <= 1)
 		throw runtime_error ("Expected data token after '" + i->currentLineTokens.at (0).stringValue + "' token.");
-	for (int tokenRef = 1; tokenRef < i->currentLineTokens.size(); tokenRef++) {
-		Token tok = i->currentLineTokens.at (tokenRef);
+	Token outputLoc = *new Token ();
+	int endLoc = int (i->currentLineTokens.size())-1;
+	
+	int toLoc = findFirstKeywordOccurrence(*new Token ("to"), i->currentLineTokens);
+	if (toLoc != -1) {
+		if (i->currentLineTokens.size() <= toLoc + 1)
+			throw runtime_error ("Expected memory or variable reference following 'to' keyword.");
+		Token outputTo = i->currentLineTokens.at(toLoc + 1);
+		if (outputTo.type != TokenType::memoryReference && outputTo.type != TokenType::variableReference)
+			throw runtime_error ("Expected memory or variable reference following 'to' keyword.");
+		outputLoc = outputTo;
+		endLoc = toLoc - 1;
+	}
+	
+	i->outputInternal(i->currentLineTokens, i, 1, endLoc, outputLoc);
+	
+	if (outputLoc.type == TokenType::undefined)
+		cout << endl;
+}
+
+void Interpreter::outputInternal (vector<Token> toks, Interpreter *i, int start, int end, Token outputLocation) {
+	stringstream ss;
+	for (int tokenRef = start; tokenRef <= end; tokenRef++) {
+		Token tok = toks.at (tokenRef);
 		if (tok.type == TokenType::memoryReference) {
 			tok = i->memoryManager->getMemoryValue(tok.memoryReference);
 		}
@@ -436,48 +458,83 @@ void Interpreter::koutput(Interpreter* i) {
 				break;
 			case stringLiteral:
 			case undefined:
-				cout << tok.stringValue;
+				ss << tok.stringValue;
 				break;
 			case intLiteral:
-				cout << tok.intValue;
+				ss << tok.intValue;
 				break;
 			case boolLiteral:
 				if (tok.boolValue) {
-					cout << "true";
+					ss << "true";
 				} else {
-					cout << "false";
+					ss << "false";
 				}
 				break;
 			case memoryReference:
-				cout << "Oops?";
+				ss << "Oops?";
 				break;
 			case variableReference:
 				Variable * v = i->getVariable(tok.variableReference);
 				switch (v->type) {
 					case pint:
-						cout << v->intValue;
+						ss << v->intValue;
 						break;
 					case pbool:
-						cout << v->boolValue;
+						ss << v->boolValue;
 						break;
 					case pstring:
-						cout << v->stringValue;
+						ss << v->stringValue;
 						break;
 					case pundefined:
-						cout << v->stringValue << v->intValue << v->boolValue;
+						ss << v->stringValue << v->intValue << v->boolValue;
 						break;
 				}
 				break;
 		}
 	}
 	
-	cout << endl;
+	if (outputLocation.type == TokenType::undefined) {
+		cout << ss.str();
+		return;
+	}
+	
+	string s = ss.str();
+	
+	if (outputLocation.type == TokenType::memoryReference)
+		i->assignMemoryValueInternal(outputLocation, *new Token (s, 0, false, 0, "", TokenType::stringLiteral), i);
+	if (outputLocation.type == TokenType::variableReference)
+		i->assignVariableValueInternal(outputLocation.variableReference, *new Token (s, 0, false, 0, "", TokenType::stringLiteral), i);
 }
+
+void Interpreter::kinput(Interpreter* i) {
+	string input;
+	int toLoc = findFirstKeywordOccurrence(*new Token ("to"), i->currentLineTokens);
+	if (toLoc == -1)
+		throw runtime_error ("Could not locate 'to' keyword to produce input direction.");
+	if (i->currentLineTokens.size() <= toLoc + 1)
+		throw runtime_error ("Expected memory or variable reference following 'to' keyword.");
+	Token inputTo = i->currentLineTokens.at(toLoc + 1);
+	if (inputTo.type != TokenType::memoryReference && inputTo.type != TokenType::variableReference)
+		throw runtime_error ("Expected memory or variable reference following 'to' keyword.");
+	
+	// Output all tokens between
+	i->outputInternal(i->currentLineTokens, i, 1, toLoc - 1, *new Token());
+	
+	cin >> input;
+	
+	if (inputTo.type == TokenType::memoryReference) {
+		i->assignMemoryValueInternal(inputTo, *new Token (input, 0, false, 0, "", TokenType::stringLiteral), i);
+	} else if (inputTo.type == TokenType::variableReference) {
+		i->assignVariableValueInternal(inputTo.variableReference, *new Token (input, 0, false, 0, "", TokenType::stringLiteral), i);
+	}
+}
+
+void Interpreter::kcast(Interpreter* i) {}
 
 void Interpreter::kwhile(Interpreter* i) {}
 
-void Interpreter::kinput(Interpreter* i) {}
-
+// The following should never be implemented
 void Interpreter::ktimes(Interpreter* i) {}
 void Interpreter::kto(Interpreter* i) {}
+void Interpreter::kas(Interpreter* i) {}
 void Interpreter::kfrom(Interpreter* i) {}
