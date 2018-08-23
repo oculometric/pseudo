@@ -12,6 +12,7 @@
 		A89F90A9211C320C002AB302 /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A89F90A8211C320C002AB302 /* main.cpp */; };
 		A89F90B1211C3237002AB302 /* Token.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A89F90AF211C3237002AB302 /* Token.cpp */; };
 		A89F90B4211C350F002AB302 /* Variable.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A89F90B2211C350F002AB302 /* Variable.cpp */; };
+		A8AB6BE6212EA54200ABEB05 /* Utils.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A8AB6BE5212EA54200ABEB05 /* Utils.cpp */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -38,6 +39,7 @@
 		A89F90B2211C350F002AB302 /* Variable.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = Variable.cpp; sourceTree = "<group>"; };
 		A89F90B3211C350F002AB302 /* Variable.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = Variable.hpp; sourceTree = "<group>"; };
 		A8AB6BD7212E06F000ABEB05 /* code5.pso */ = {isa = PBXFileReference; lastKnownFileType = text; path = code5.pso; sourceTree = "<group>"; };
+		A8AB6BE5212EA54200ABEB05 /* Utils.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = Utils.cpp; sourceTree = "<group>"; };
 		A8E19F2E212B2462001B492E /* code4.pso */ = {isa = PBXFileReference; lastKnownFileType = text; path = code4.pso; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -74,6 +76,7 @@
 				A8E19F2E212B2462001B492E /* code4.pso */,
 				A8AB6BD7212E06F000ABEB05 /* code5.pso */,
 				A89F90A8211C320C002AB302 /* main.cpp */,
+				A8AB6BE5212EA54200ABEB05 /* Utils.cpp */,
 				A86D3FA8211DD0D100794FED /* Interpreter.cpp */,
 				A86D3FA9211DD0D100794FED /* Interpreter.hpp */,
 				A89F90AF211C3237002AB302 /* Token.cpp */,
@@ -143,6 +146,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				A89F90B4211C350F002AB302 /* Variable.cpp in Sources */,
+				A8AB6BE6212EA54200ABEB05 /* Utils.cpp in Sources */,
 				A86D3FAA211DD0D100794FED /* Interpreter.cpp in Sources */,
 				A89F90A9211C320C002AB302 /* main.cpp in Sources */,
 				A86D3FA7211DCAA600794FED /* MemoryManager.cpp in Sources */,

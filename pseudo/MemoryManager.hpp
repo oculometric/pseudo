@@ -9,7 +9,6 @@
 #ifndef MemoryManager_hpp
 #define MemoryManager_hpp
 
-#include <vector>
 #include "Token.hpp"
 
 using namespace std;

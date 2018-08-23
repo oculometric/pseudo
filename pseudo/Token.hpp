@@ -9,7 +9,9 @@
 #ifndef Token_hpp
 #define Token_hpp
 
+#include <fstream>
 #include <string>
+#include <vector>
 
 using namespace std;
 

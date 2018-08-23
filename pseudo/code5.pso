@@ -6,4 +6,4 @@ repeat _num_ times {   // Repeat the statements in brackets a certain number of 
 	output _value_;    // Display the value we have reached so far.
 }
 
-output "We have now finished a iterating. The result was:" _value_;
+output "We have now finished a iterating. The result was: " _value_;
