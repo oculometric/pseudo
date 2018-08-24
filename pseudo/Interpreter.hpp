@@ -12,6 +12,7 @@
 #include "Token.hpp"
 #include "Variable.hpp"
 #include "MemoryManager.hpp"
+#include "Marker.hpp"
 
 using namespace std;
 
@@ -20,8 +21,11 @@ private:
 	string directInput;
 	string preparedInput;
 	bool isPrepared;
+	
 	MemoryManager *memoryManager;
 	vector<Variable> *variables;
+	vector<Marker> *markers;
+	
 	int lineRef;
 	vector<Token> currentLineTokens;
 	vector<string> lines;
@@ -45,18 +49,24 @@ private:
 	static void kfrom (Interpreter* i);
 	static void kwhile (Interpreter* i);
 	static void kcast (Interpreter* i);
+	static void extracted(Interpreter *i, const Marker &m);
+	
+	static void kmarker (Interpreter* i);
+	static void kif (Interpreter* i);
+	static void kjump (Interpreter* i);
 	
 	void outputInternal (vector<Token> toks, Interpreter *i, int start, int end, Token outputLocation);
 	
 	void assignMemoryValueInternal (Token assignee, Token newValue, Interpreter* i);
 	void assignVariableValueInternal (string assigneeName, Token newValue, Interpreter* i);
 	Variable* getVariable (string name);
+	bool markerExists (Interpreter *i, string s);
 public:
 	static const vector<string> keywords () {
 		return vector<string> ({"increment", "decrement", "repeat", "times", "set", "to", "input", "output", "from", "while", "kas"});
 	}
 
-	Interpreter (string input, MemoryManager *mm, vector<Variable> *vars);
+	Interpreter (string input, MemoryManager *mm, vector<Variable> *vars, vector<Marker> *mrkrs);
 	
 	void prepare ();
 	

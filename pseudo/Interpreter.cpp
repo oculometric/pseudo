@@ -18,10 +18,11 @@ Variable *Interpreter::getVariable(std::string name) {
 	return NULL;
 }
 
-Interpreter::Interpreter (string input, MemoryManager *mm, vector<Variable> *vars) {
+Interpreter::Interpreter (string input, MemoryManager *mm, vector<Variable> *vars, vector<Marker> *mrkrs) {
 	directInput = input;
 	memoryManager = mm;
 	variables = vars;
+	markers = mrkrs;
 	isPrepared = false;
 }
 
@@ -409,7 +410,7 @@ void Interpreter::krepeat(Interpreter* i) {
 	
 	// Execute lines
 	while (numTimes > 0) {
-		Interpreter nextI = *new Interpreter (subExecutionLines, i->memoryManager, i->variables);
+		Interpreter nextI = *new Interpreter (subExecutionLines, i->memoryManager, i->variables, i->markers);
 		nextI.prepare();
 	
 		nextI.interpret();
@@ -532,6 +533,32 @@ void Interpreter::kinput(Interpreter* i) {
 void Interpreter::kcast(Interpreter* i) {}
 
 void Interpreter::kwhile(Interpreter* i) {}
+
+void Interpreter::kif(Interpreter* i) {}
+
+void Interpreter::kjump(Interpreter* i) {
+	
+}
+
+bool Interpreter::markerExists (Interpreter *i, string s) {
+	for (Marker m : *i->markers) {
+		if (m.identifier == s) {
+			return true;
+		}
+	}
+	return false;
+}
+
+void Interpreter::kmarker(Interpreter* i) {
+	if (i->currentLineTokens.size() < 2)
+		throw runtime_error ("Keyword 'marker' requires string literal as identifier after keyword.");
+	if (i->currentLineTokens.at (1).type != TokenType::stringLiteral)
+		throw runtime_error ("Token after 'marker' keyword must be a string literal.");
+	
+	Marker m = *new Marker (i->currentLineTokens.at (1).stringValue, i->lineRef);
+	if (!i->markerExists (i, i->currentLineTokens.at (1).stringValue))
+		i->markers->push_back(m);
+}
 
 // The following should never be implemented
 void Interpreter::ktimes(Interpreter* i) {}

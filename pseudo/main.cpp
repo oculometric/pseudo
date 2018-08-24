@@ -18,11 +18,12 @@ int main(int argc, const char * argv[]) {
 	// Interpret the code we loaded.
 	MemoryManager mm = *new MemoryManager();
 	vector<Variable> variables;
+	vector<Marker> markers;
 #ifdef DEBUG
 	string codeFile = "code5.pso";
-	Interpreter inter = Interpreter(readEntireTextFile(codeFile), &mm, &variables);
+	Interpreter inter = Interpreter(readEntireTextFile(codeFile), &mm, &variables, &markers);
 #else
-	Interpreter inter = Interpreter(readEntireTextFile(argv[1]), &mm, &variables);
+	Interpreter inter = Interpreter(readEntireTextFile(argv[1]), &mm, &variables, &markers);
 #endif
 	inter.prepare();
 	inter.interpret();

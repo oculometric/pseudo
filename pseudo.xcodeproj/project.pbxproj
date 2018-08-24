@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		A82AC21E2130A59D0048ECC4 /* Marker.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A82AC21C2130A59D0048ECC4 /* Marker.cpp */; };
 		A86D3FA7211DCAA600794FED /* MemoryManager.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A86D3FA5211DCAA600794FED /* MemoryManager.cpp */; };
 		A86D3FAA211DD0D100794FED /* Interpreter.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A86D3FA8211DD0D100794FED /* Interpreter.cpp */; };
 		A89F90A9211C320C002AB302 /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A89F90A8211C320C002AB302 /* main.cpp */; };
@@ -28,6 +29,8 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		A82AC21C2130A59D0048ECC4 /* Marker.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = Marker.cpp; sourceTree = "<group>"; };
+		A82AC21D2130A59D0048ECC4 /* Marker.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = Marker.hpp; sourceTree = "<group>"; };
 		A86D3FA5211DCAA600794FED /* MemoryManager.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = MemoryManager.cpp; sourceTree = "<group>"; };
 		A86D3FA6211DCAA600794FED /* MemoryManager.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = MemoryManager.hpp; sourceTree = "<group>"; };
 		A86D3FA8211DD0D100794FED /* Interpreter.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = Interpreter.cpp; sourceTree = "<group>"; };
@@ -79,6 +82,8 @@
 				A8AB6BE5212EA54200ABEB05 /* Utils.cpp */,
 				A86D3FA8211DD0D100794FED /* Interpreter.cpp */,
 				A86D3FA9211DD0D100794FED /* Interpreter.hpp */,
+				A82AC21C2130A59D0048ECC4 /* Marker.cpp */,
+				A82AC21D2130A59D0048ECC4 /* Marker.hpp */,
 				A89F90AF211C3237002AB302 /* Token.cpp */,
 				A89F90B0211C3237002AB302 /* Token.hpp */,
 				A86D3FA5211DCAA600794FED /* MemoryManager.cpp */,
@@ -145,6 +150,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				A82AC21E2130A59D0048ECC4 /* Marker.cpp in Sources */,
 				A89F90B4211C350F002AB302 /* Variable.cpp in Sources */,
 				A8AB6BE6212EA54200ABEB05 /* Utils.cpp in Sources */,
 				A86D3FAA211DD0D100794FED /* Interpreter.cpp in Sources */,
