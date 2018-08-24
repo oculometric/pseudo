@@ -6,9 +6,13 @@ input "Enter your name: " to _name_;           // Get the user's name
 output "Welcome, " _name_ "." to _testOutput_; // Make a greeting
 output _testOutput_;                           // Send it to the screen
 
+marker "test";         // This marks where to come to if we ever want to repeat the next bit.
 repeat _num_ times {   // Repeat the statements in brackets a certain number of times.
 	increment _value_; // Increment the value we stored.
 	output _value_;    // Display the value we have reached so far.
 }
 
-output "We have now finished a iterating. The result was: " _value_;
+output "We have now finished a iterating. The total was: " _value_;
+output "Let's do that again!";
+
+jump "test";

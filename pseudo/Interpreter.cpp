@@ -537,7 +537,17 @@ void Interpreter::kwhile(Interpreter* i) {}
 void Interpreter::kif(Interpreter* i) {}
 
 void Interpreter::kjump(Interpreter* i) {
+	if (i->currentLineTokens.size() < 2)
+		throw runtime_error ("Keyword 'jump' requires string literal marker identifier after keyword.");
+	if (i->currentLineTokens.at (1).type != TokenType::stringLiteral)
+		throw runtime_error ("Token after 'jump' keyword must be a string literal.");
 	
+	if (!i->markerExists (i, i->currentLineTokens.at (1).stringValue))
+		throw runtime_error ("Unknown marker identifier.");
+	
+	for (Marker mm : *i->markers)
+		if (mm.identifier == i->currentLineTokens.at (1).stringValue)
+			i->lineRef = mm.lineReference;
 }
 
 bool Interpreter::markerExists (Interpreter *i, string s) {
@@ -555,7 +565,7 @@ void Interpreter::kmarker(Interpreter* i) {
 	if (i->currentLineTokens.at (1).type != TokenType::stringLiteral)
 		throw runtime_error ("Token after 'marker' keyword must be a string literal.");
 	
-	Marker m = *new Marker (i->currentLineTokens.at (1).stringValue, i->lineRef);
+	Marker m = *new Marker (i->currentLineTokens.at (1).stringValue, i->lineRef + 1);
 	if (!i->markerExists (i, i->currentLineTokens.at (1).stringValue))
 		i->markers->push_back(m);
 }
