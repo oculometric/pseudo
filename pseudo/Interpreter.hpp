@@ -34,6 +34,8 @@ private:
 	
 	void interpretLine (string line);
 	
+	vector<string> extraTokens = {"==", "<", ">", "!=", "NULL", "{", "}"};
+	
 	Token makeToken (string tokenInput);
 	
 	static void kincrement (Interpreter* i);
@@ -51,6 +53,8 @@ private:
 	static void kmarker (Interpreter* i);
 	static void kif (Interpreter* i);
 	static void kjump (Interpreter* i);
+	static void kcall (Interpreter* i);
+	static void kfunction (Interpreter* i);
 	
 	void outputInternal (vector<Token> toks, Interpreter *i, int start, int end, Token outputLocation);
 	
@@ -58,11 +62,12 @@ private:
 	void assignVariableValueInternal (string assigneeName, Token newValue, Interpreter* i);
 	Variable* getVariable (string name);
 	bool markerExists (Interpreter *i, string s);
+	bool evaluate (Token tok1, Token tok2, string operatorr, Interpreter *i);
 public:
-	const vector<void (*)(Interpreter* i)> keywordFuncPointer = {kincrement, kdecrement, krepeat, ktimes, kset, kto, kinput, koutput, kfrom, kwhile, kas, kcast, kmarker, kif, kjump};
+	const vector<void (*)(Interpreter* i)> keywordFuncPointer = {kincrement, kdecrement, krepeat, ktimes, kset, kto, kinput, koutput, kfrom, kwhile, kas, kcast, kmarker, kif, kjump, kcall, kfunction};
 	
 	static const vector<string> keywords () {
-		return vector<string> ({"increment", "decrement", "repeat", "times", "set", "to", "input", "output", "from", "while", "as", "cast", "marker", "if", "jump"});
+		return vector<string> ({"increment", "decrement", "repeat", "times", "set", "to", "input", "output", "from", "while", "as", "cast", "marker", "if", "jump", "call", "function"});
 	}
 
 	Interpreter (string input, MemoryManager *mm, vector<Variable> *vars, vector<Marker> *mrkrs);

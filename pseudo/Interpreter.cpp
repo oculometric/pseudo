@@ -118,7 +118,7 @@ void Interpreter::interpretLine (string line) {
 	}
 }
 
-Token Interpreter::makeToken (string tokenInput) {
+Token Interpreter::makeToken (string tokenInput) {	
 	if (tokenInput.at(0) == '\"') {                  // String literal
 		string s = "";
 		bool b = false;
@@ -133,6 +133,8 @@ Token Interpreter::makeToken (string tokenInput) {
 			}
 		}
 		return *new Token (s, 0, false, 0, "", TokenType::stringLiteral);
+	} else if (containsString(extraTokens, tokenInput)) { // An additional, non-keyword token
+		return *new Token (tokenInput);
 	} else if (tokenInput.at (0) == '[') {           // Memory reference
 		string s = "";
 		bool b = false;
@@ -186,14 +188,8 @@ Token Interpreter::makeToken (string tokenInput) {
 		return *new Token (tokenInput, i, false, 0, "", TokenType::intLiteral);
 	} else if (containsString(keywords(), tokenInput)) {   // Keyword
 		return *new Token (tokenInput, 0, false, 0, "", TokenType::keyword);
-	} else if (tokenInput == "NULL") {
-		return *new Token ("NULL");
-	} else if (tokenInput == "{") {
-		return *new Token (tokenInput);
-	} else if (tokenInput == "}") {
-		return *new Token (tokenInput);
 	} // Undefined, syntax error.
-	throw runtime_error ("Invalid keyword: '" + tokenInput + "'.");
+	throw runtime_error ("Invalid keyword '" + tokenInput + "'.");
 }
 
 void Interpreter::kincrement(Interpreter* i) {
@@ -395,30 +391,30 @@ void Interpreter::krepeat(Interpreter* i) {
 		throw runtime_error("Expected '{' after 'times' token.");
 	}
 	
-	string subExecutionLines;
+	int start = i->lineRef + 1;
+	int end = i->lineRef+1;
 	
-	int loc = i->lineRef+1;
-	
-	while (loc < i->lines.size()) {
-		if ((i->lines.at (loc).size() > 0) &&(i->lines.at (loc)).at(0) == '}') {
+	while (end < i->lines.size()) {
+		if ((i->lines.at (end).size() > 0) && (i->lines.at (end)).at(0) == '}') {
 			break;
-		} else {
-			subExecutionLines += i->lines.at (loc) + ";";
 		}
-		loc++;
+		end++;
 	}
 	
 	// Execute lines
 	while (numTimes > 0) {
-		Interpreter nextI = *new Interpreter (subExecutionLines, i->memoryManager, i->variables, i->markers);
-		nextI.prepare();
-	
-		nextI.interpret();
+		i->lineRef = start;
+		while (i->lineRef < end) {
+			string line = i->lines.at(i->lineRef);
+			if (line.size() > 1)
+				i->interpretLine(line);
+			i->lineRef++;
+		}
 		numTimes--;
 	}
 	
 	// Increment line counter to be aligned with closing brace
-	i->lineRef = loc;
+	i->lineRef = end;
 }
 
 void Interpreter::koutput(Interpreter* i) {
@@ -476,6 +472,8 @@ void Interpreter::outputInternal (vector<Token> toks, Interpreter *i, int start,
 				break;
 			case variableReference:
 				Variable * v = i->getVariable(tok.variableReference);
+				if (v == NULL)
+					throw runtime_error ("Reference to undeclared variable '" + tok.variableReference + "'.");
 				switch (v->type) {
 					case pint:
 						ss << v->intValue;
@@ -532,9 +530,52 @@ void Interpreter::kinput(Interpreter* i) {
 
 void Interpreter::kcast(Interpreter* i) {}
 
-void Interpreter::kwhile(Interpreter* i) {}
+void Interpreter::kcall(Interpreter* i) {
+	// Referenced function should be executed as shown in the repeat statement
+}
 
-void Interpreter::kif(Interpreter* i) {}
+void Interpreter::kfunction(Interpreter* i) {
+	// Code inside this statement should be skipped over
+}
+
+void Interpreter::kif(Interpreter* i) {
+	if (i->currentLineTokens.size() < 5)
+		throw runtime_error ("Expected conditioning tokens after 'if' keyword.");
+	vector<Token> condition;
+	for (int loc = 1; loc < i->currentLineTokens.size()-1; loc++)
+		condition.push_back(i->currentLineTokens.at(loc));
+	
+	Token firstOperand = condition.at(0);
+	Token secondOperand = condition.at(2);
+	Token operato = condition.at (1);
+	
+	int start = i->lineRef + 1;
+	int end = i->lineRef+1;
+	
+	while (end < i->lines.size()) {
+		if ((i->lines.at (end).size() > 0) && (i->lines.at (end)).at(0) == '}') {
+			break;
+		}
+		end++;
+	}
+	
+	
+	if (!i->evaluate (firstOperand, secondOperand, operato.stringValue, i)) {
+		i->lineRef = end;
+		return;
+	}
+	
+//	// Execute lines
+//	i->lineRef = start;
+//	while (i->lineRef < end) {
+//		string line = i->lines.at(i->lineRef);
+//		if (line.size() > 1)
+//			i->interpretLine(line);
+//		i->lineRef++;
+//	}
+}
+
+void Interpreter::kwhile(Interpreter* i) {}
 
 void Interpreter::kjump(Interpreter* i) {
 	if (i->currentLineTokens.size() < 2)
@@ -546,8 +587,11 @@ void Interpreter::kjump(Interpreter* i) {
 		throw runtime_error ("Unknown marker identifier.");
 	
 	for (Marker mm : *i->markers)
-		if (mm.identifier == i->currentLineTokens.at (1).stringValue)
+		if (mm.identifier == i->currentLineTokens.at (1).stringValue) {
+			if (mm.isFunction)
+				throw runtime_error ("Cannot jump to function marker.");
 			i->lineRef = mm.lineReference;
+		}
 }
 
 bool Interpreter::markerExists (Interpreter *i, string s) {
@@ -568,6 +612,94 @@ void Interpreter::kmarker(Interpreter* i) {
 	Marker m = *new Marker (i->currentLineTokens.at (1).stringValue, i->lineRef + 1);
 	if (!i->markerExists (i, i->currentLineTokens.at (1).stringValue))
 		i->markers->push_back(m);
+}
+
+bool Interpreter::evaluate (Token tok1, Token tok2, string operatorr, Interpreter *i) {
+	if (tok1.type == TokenType::undefined || tok2.type == TokenType::undefined)
+		throw runtime_error ("Operand cannot be of undefined type (aka NULL).");
+	if (tok1.type == TokenType::memoryReference) {
+		Token newTok1 = i->memoryManager->getMemoryValue(tok1.memoryReference);
+		return evaluate(newTok1, tok2, operatorr, i);
+	} else if (tok2.type == TokenType::memoryReference) {
+		Token newTok2 = i->memoryManager->getMemoryValue(tok1.memoryReference);
+		return evaluate(tok1, newTok2, operatorr, i);
+	}
+	
+	Token realTok1 = tok1;
+	Token realTok2 = tok2;
+	
+	if (tok1.type == TokenType::variableReference) {
+		Variable * v = i->getVariable(tok1.variableReference);
+		if (v == NULL)
+			throw runtime_error ("Use of unknown identifier '" + tok1.variableReference + "'.");
+		realTok1 = *new Token (v->stringValue, v->intValue, v->boolValue, 0, "");
+		if (v->type == Primitive::pstring)
+			realTok1.type = TokenType::stringLiteral;
+		if (v->type == Primitive::pint)
+			realTok1.type = TokenType::intLiteral;
+		if (v->type == Primitive::pbool)
+			realTok1.type = TokenType::boolLiteral;
+		if (v->type == Primitive::pundefined)
+			throw runtime_error ("Operand cannot be of undefined type.");
+	}
+	
+	if (tok2.type == TokenType::variableReference) {
+		Variable * v = i->getVariable(tok2.variableReference);
+		if (v == NULL)
+			throw runtime_error ("Use of unknown identifier '" + tok2.variableReference + "'.");
+		realTok2 = *new Token (v->stringValue, v->intValue, v->boolValue, 0, "");
+		if (v->type == Primitive::pstring)
+			realTok2.type = TokenType::stringLiteral;
+		if (v->type == Primitive::pint)
+			realTok2.type = TokenType::intLiteral;
+		if (v->type == Primitive::pbool)
+			realTok2.type = TokenType::boolLiteral;
+		if (v->type == Primitive::pundefined)
+			throw runtime_error ("Operand cannot be of undefined type.");
+	}
+	
+	if (realTok1.type != realTok2.type)
+		throw runtime_error ("Cannot compare two operands of differing types.");
+	
+	TokenType type = realTok1.type;
+	
+	if (operatorr == "==") {
+		if (type == TokenType::stringLiteral) {
+			if (realTok1.stringValue == realTok2.stringValue)
+				return true;
+		} else if (type == TokenType::intLiteral) {
+			if (realTok1.intValue == realTok2.intValue)
+				return true;
+		} else if (type == TokenType::boolLiteral) {
+			if (realTok1.boolValue == realTok2.boolValue)
+				return true;
+		}
+	} else if (operatorr == "!=") {
+		if (type == TokenType::stringLiteral) {
+			if (realTok1.stringValue != realTok2.stringValue)
+				return true;
+		} else if (type == TokenType::intLiteral) {
+			if (realTok1.intValue != realTok2.intValue)
+				return true;
+		} else if (type == TokenType::boolLiteral) {
+			if (realTok1.boolValue != realTok2.boolValue)
+				return true;
+		}
+	} else if (operatorr == "<") {
+		if (type == TokenType::intLiteral) {
+			if (realTok1.intValue < realTok2.intValue)
+				return true;
+		} else
+			throw runtime_error ("Non-int operand types cannot be compared with '<' operator.");
+	} else if (operatorr == ">") {
+		if (type == TokenType::intLiteral) {
+			if (realTok1.intValue > realTok2.intValue)
+				return true;
+		} else
+			throw runtime_error ("Non-int operand types cannot be compared with '>' operator.");
+	}
+	
+	return false;
 }
 
 // The following should never be implemented

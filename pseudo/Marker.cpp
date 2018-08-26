@@ -12,4 +12,14 @@
 Marker::Marker(std::string id, int lnR) { 
     identifier = id;
 	lineReference = lnR;
+	
+	isFunction = false;
+}
+
+Marker::Marker(std::string id, int lnR, int eLnR) {
+	identifier = id;
+	lineReference = lnR;
+	
+	isFunction = true;
+	endLineReference = eLnR;
 }

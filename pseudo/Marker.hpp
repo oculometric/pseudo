@@ -18,6 +18,11 @@ public:
 	string identifier;
 	int lineReference;
 	
+	bool isFunction;
+	int endLineReference;
+	
 	Marker (string id, int lnR);
+	
+	Marker (string id, int lnR, int eLnR);
 };
 #endif /* Marker_hpp */

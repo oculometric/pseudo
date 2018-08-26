@@ -1,10 +1,10 @@
 set _num_ to 5;        // Declare a variable to say how many times to iterate the calls.
 set _value_ to 0;      // Declare a variable to keep track of our calls.
 
-input "Enter your name: " to _name_;           // Get the user's name
+// input "Enter your name: " to _name_;           // Get the user's name
 
-output "Welcome, " _name_ "." to _testOutput_; // Make a greeting
-output _testOutput_;                           // Send it to the screen
+// output "Welcome, " _name_ "." to _testOutput_; // Make a greeting
+// output _testOutput_;                           // Send it to the screen
 
 marker "test";         // This marks where to come to if we ever want to repeat the next bit.
 repeat _num_ times {   // Repeat the statements in brackets a certain number of times.
@@ -13,6 +13,8 @@ repeat _num_ times {   // Repeat the statements in brackets a certain number of 
 }
 
 output "We have now finished a iterating. The total was: " _value_;
-output "Let's do that again!";
+output "Let's do that again shall we?";
 
-jump "test";
+if _value_ < 1000000 {
+	jump "test";
+}

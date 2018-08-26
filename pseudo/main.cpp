@@ -20,7 +20,7 @@ int main(int argc, const char * argv[]) {
 	vector<Variable> variables;
 	vector<Marker> markers;
 #ifdef DEBUG
-	string codeFile = "code5.pso";
+	string codeFile = "/Users/javaxprogrammer/Desktop/efficient.pso";
 	Interpreter inter = Interpreter(readEntireTextFile(codeFile), &mm, &variables, &markers);
 #else
 	Interpreter inter = Interpreter(readEntireTextFile(argv[1]), &mm, &variables, &markers);

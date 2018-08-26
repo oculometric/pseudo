@@ -1,0 +1,10 @@
+set _value1_ to 5;
+set _value2_ to 5;
+
+if _value1_ == _value2_ {
+	output "They equal!";
+}
+
+if _value1_ != _value2_ {
+	output "They don't equal!";
+}
