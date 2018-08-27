@@ -111,11 +111,14 @@ void Interpreter::interpretLine (string line) {
 	if (tokens.size() > 0) {
 		if (tokens.at(0).type == TokenType::keyword) {
 			int loc = keywordIndex (tokens.at(0));
-			keywordFuncPointer.at (loc) (this);
+			keywordFuncPointer().at (loc) (this);
 		} else {
 			throw runtime_error("Expected keyword token, got '" + tokens.at(0).stringValue + "'.");
 		}
 	}
+	
+	tokens.clear();
+	tokensString.clear();
 }
 
 Token Interpreter::makeToken (string tokenInput) {	
@@ -503,6 +506,7 @@ void Interpreter::outputInternal (vector<Token> toks, Interpreter *i, int start,
 		i->assignMemoryValueInternal(outputLocation, *new Token (s, 0, false, 0, "", TokenType::stringLiteral), i);
 	if (outputLocation.type == TokenType::variableReference)
 		i->assignVariableValueInternal(outputLocation.variableReference, *new Token (s, 0, false, 0, "", TokenType::stringLiteral), i);
+	s.clear();
 }
 
 void Interpreter::kinput(Interpreter* i) {

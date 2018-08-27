@@ -64,10 +64,22 @@ private:
 	bool markerExists (Interpreter *i, string s);
 	bool evaluate (Token tok1, Token tok2, string operatorr, Interpreter *i);
 public:
-	const vector<void (*)(Interpreter* i)> keywordFuncPointer = {kincrement, kdecrement, krepeat, ktimes, kset, kto, kinput, koutput, kfrom, kwhile, kas, kcast, kmarker, kif, kjump, kcall, kfunction};
+	const vector<void (*)(Interpreter* i)> keywordFuncPointer () {
+		vector<void (*)(Interpreter* i)> v = {kincrement, kdecrement, krepeat, ktimes, kset, kto, kinput, koutput, kfrom, kwhile, kas, kcast, kif, kcall, kfunction};
+#if INCLUDE_JUMP_AND_MARKER_KWORDS
+		v.push_back (kjump);
+		v.push_back (kmarker);
+#endif
+		return v;
+	};
 	
 	static const vector<string> keywords () {
-		return vector<string> ({"increment", "decrement", "repeat", "times", "set", "to", "input", "output", "from", "while", "as", "cast", "marker", "if", "jump", "call", "function"});
+		vector<string> v = {"increment", "decrement", "repeat", "times", "set", "to", "input", "output", "from", "while", "as", "cast", "if", "call", "function"};
+#if INCLUDE_JUMP_AND_MARKER_KWORDS
+		v.push_back ("jump");
+		v.push_back ("marker");
+#endif
+		return v;
 	}
 
 	Interpreter (string input, MemoryManager *mm, vector<Variable> *vars, vector<Marker> *mrkrs);

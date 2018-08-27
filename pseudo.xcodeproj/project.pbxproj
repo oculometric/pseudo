@@ -41,6 +41,7 @@
 		A89F90B0211C3237002AB302 /* Token.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = Token.hpp; sourceTree = "<group>"; };
 		A89F90B2211C350F002AB302 /* Variable.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = Variable.cpp; sourceTree = "<group>"; };
 		A89F90B3211C350F002AB302 /* Variable.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = Variable.hpp; sourceTree = "<group>"; };
+		A8A76F092134A9BA0059BF34 /* loopTest.pso */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = loopTest.pso; sourceTree = "<group>"; };
 		A8AB6BD7212E06F000ABEB05 /* code5.pso */ = {isa = PBXFileReference; lastKnownFileType = text; path = code5.pso; sourceTree = "<group>"; };
 		A8AB6BE5212EA54200ABEB05 /* Utils.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = Utils.cpp; sourceTree = "<group>"; };
 		A8AEBE562132A2A5004BA461 /* ifTest.pso */ = {isa = PBXFileReference; lastKnownFileType = text; path = ifTest.pso; sourceTree = "<group>"; };
@@ -80,6 +81,7 @@
 				A8E19F2E212B2462001B492E /* code4.pso */,
 				A8AB6BD7212E06F000ABEB05 /* code5.pso */,
 				A8AEBE562132A2A5004BA461 /* ifTest.pso */,
+				A8A76F092134A9BA0059BF34 /* loopTest.pso */,
 				A89F90A8211C320C002AB302 /* main.cpp */,
 				A8AB6BE5212EA54200ABEB05 /* Utils.cpp */,
 				A86D3FA8211DD0D100794FED /* Interpreter.cpp */,
@@ -278,6 +280,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CODE_SIGN_STYLE = Automatic;
+				INCLUDE_JUMP_AND_MARKER_KWORDS = NO;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SHOULD_RECEIVE_FILE_FROM_CMDINPUT = NO;
 				SYMROOT = build;
@@ -289,6 +292,7 @@
 			buildSettings = {
 				CODE_SIGN_STYLE = Automatic;
 				DEBUG_INFORMATION_FORMAT = dwarf;
+				INCLUDE_JUMP_AND_MARKER_KWORDS = NO;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SHOULD_RECEIVE_FILE_FROM_CMDINPUT = YES;
 				SYMROOT = build;
