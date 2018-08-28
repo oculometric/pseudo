@@ -72,15 +72,6 @@ public:
 #endif
 		return v;
 	};
-	
-	static const vector<string> keywords () {
-		vector<string> v = {"increment", "decrement", "repeat", "times", "set", "to", "input", "output", "from", "while", "as", "cast", "if", "call", "function"};
-#if INCLUDE_JUMP_AND_MARKER_KWORDS
-		v.push_back ("jump");
-		v.push_back ("marker");
-#endif
-		return v;
-	}
 
 	Interpreter (string input, MemoryManager *mm, vector<Variable> *vars, vector<Marker> *mrkrs);
 	
@@ -99,5 +90,11 @@ int keywordIndex (Token t);
 int findFirstKeywordOccurrence (Token t, vector<Token> vec);
 vector<string> split (string input, char regex);
 string readEntireTextFile (string path);
+
+const vector<string> keywords = {"increment", "decrement", "repeat", "times", "set", "to", "input", "output", "from", "while", "as", "cast", "if", "call", "function",
+#if INCLUDE_JUMP_AND_MARKER_KWORDS
+	"jump", "marker"
+#endif
+};
 
 #endif /* Interpreter_hpp */

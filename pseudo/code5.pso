@@ -7,11 +7,11 @@ set _value_ to 0;      // Declare a variable to keep track of our calls.
  output _testOutput_;                           // Send it to the screen
 
 repeat 1000000 times {         // This marks where to come to if we ever want to repeat the next bit.
-repeat _num_ times {   // Repeat the statements in brackets a certain number of times.
-	increment _value_; // Increment the value we stored.
-	output _value_;    // Display the value we have reached so far.
-}
+	repeat _num_ times {   // Repeat the statements in brackets a certain number of times.
+		increment _value_; // Increment the value we stored.
+		output _value_;    // Display the value we have reached so far.
+	}
 
-output "We have now finished a iterating. The total was: " _value_;
-output "Let's do that again shall we?";
+	output "We have now finished a iterating. The total was: " _value_;
+	output "Let's do that again shall we?";
 }

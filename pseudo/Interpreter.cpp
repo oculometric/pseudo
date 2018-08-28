@@ -70,7 +70,7 @@ void Interpreter::interpret () {
 		}
 		while (lineRef < lines.size()) {
 			string line = lines.at(lineRef);
-			if (line.size() > 1)
+			if ((line).size() > 1)
 				interpretLine(line);
 			lineRef++;
 		}
@@ -135,9 +135,9 @@ Token Interpreter::makeToken (string tokenInput) {
 				b = true;
 			}
 		}
-		return *new Token (s, 0, false, 0, "", TokenType::stringLiteral);
+		return Token (s, 0, false, 0, "", TokenType::stringLiteral);
 	} else if (containsString(extraTokens, tokenInput)) { // An additional, non-keyword token
-		return *new Token (tokenInput);
+		return Token (tokenInput);
 	} else if (tokenInput.at (0) == '[') {           // Memory reference
 		string s = "";
 		bool b = false;
@@ -152,7 +152,7 @@ Token Interpreter::makeToken (string tokenInput) {
 			}
 		}
 		int i = intFrom(s);
-		return *new Token (tokenInput, 0, false, i, "", TokenType::memoryReference);
+		return Token (tokenInput, 0, false, i, "", TokenType::memoryReference);
 	} else if (tokenInput.at (0) == '_') {           // Variable reference
 		string s = "";
 		bool b = false;
@@ -166,7 +166,7 @@ Token Interpreter::makeToken (string tokenInput) {
 				b = true;
 			}
 		}
-		return *new Token (tokenInput, 0, true, 0, s, TokenType::variableReference);
+		return Token (tokenInput, 0, true, 0, s, TokenType::variableReference);
 	} else if (tokenInput.at (0) == '!') {           // Boolean literal
 		string s = "";
 		bool b = false;
@@ -181,16 +181,16 @@ Token Interpreter::makeToken (string tokenInput) {
 			}
 		}
 		if (s == "true") {
-			return *new Token (tokenInput, 0, true, 0, "", TokenType::boolLiteral);
+			return Token (tokenInput, 0, true, 0, "", TokenType::boolLiteral);
 		} else if (s == "false") {
-			return *new Token (tokenInput, 0, false, 0, "", TokenType::boolLiteral);
+			return Token (tokenInput, 0, false, 0, "", TokenType::boolLiteral);
 		}
 		throw exception();
 	} else if (containsChar (ints, tokenInput.at (0))) { // Integer literal
 		int i = intFrom(tokenInput);
-		return *new Token (tokenInput, i, false, 0, "", TokenType::intLiteral);
-	} else if (containsString(keywords(), tokenInput)) {   // Keyword
-		return *new Token (tokenInput, 0, false, 0, "", TokenType::keyword);
+		return Token (tokenInput, i, false, 0, "", TokenType::intLiteral);
+	} else if (containsString(keywords, tokenInput)) {   // Keyword
+		return Token (tokenInput, 0, false, 0, "", TokenType::keyword);
 	} // Undefined, syntax error.
 	throw runtime_error ("Invalid keyword '" + tokenInput + "'.");
 }
@@ -424,10 +424,10 @@ void Interpreter::koutput(Interpreter* i) {
 	// Handle any type of token.
 	if (i->currentLineTokens.size() <= 1)
 		throw runtime_error ("Expected data token after '" + i->currentLineTokens.at (0).stringValue + "' token.");
-	Token outputLoc = *new Token ();
+	Token outputLoc = Token ();
 	int endLoc = int (i->currentLineTokens.size())-1;
 	
-	int toLoc = findFirstKeywordOccurrence(*new Token ("to"), i->currentLineTokens);
+	int toLoc = findFirstKeywordOccurrence(Token ("to"), i->currentLineTokens);
 	if (toLoc != -1) {
 		if (i->currentLineTokens.size() <= toLoc + 1)
 			throw runtime_error ("Expected memory or variable reference following 'to' keyword.");
@@ -446,6 +446,7 @@ void Interpreter::koutput(Interpreter* i) {
 
 void Interpreter::outputInternal (vector<Token> toks, Interpreter *i, int start, int end, Token outputLocation) {
 	stringstream ss;
+	
 	for (int tokenRef = start; tokenRef <= end; tokenRef++) {
 		Token tok = toks.at (tokenRef);
 		if (tok.type == TokenType::memoryReference) {
@@ -496,17 +497,16 @@ void Interpreter::outputInternal (vector<Token> toks, Interpreter *i, int start,
 	}
 	
 	if (outputLocation.type == TokenType::undefined) {
-		cout << ss.str();
+		cout << (ss).str();
 		return;
 	}
 	
-	string s = ss.str();
+	string s = (ss).str();
 	
 	if (outputLocation.type == TokenType::memoryReference)
 		i->assignMemoryValueInternal(outputLocation, *new Token (s, 0, false, 0, "", TokenType::stringLiteral), i);
 	if (outputLocation.type == TokenType::variableReference)
 		i->assignVariableValueInternal(outputLocation.variableReference, *new Token (s, 0, false, 0, "", TokenType::stringLiteral), i);
-	s.clear();
 }
 
 void Interpreter::kinput(Interpreter* i) {

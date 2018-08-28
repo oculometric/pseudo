@@ -79,7 +79,7 @@ int intFrom (string s) {
 
 int keywordIndex (Token t) {
 	int ind = 0;
-	for (string s : Interpreter::keywords()) {
+	for (string s : keywords) {
 		if (t.stringValue == s) {
 			return ind;
 		}

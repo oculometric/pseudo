@@ -1,0 +1,8 @@
+set _i_ to 0;
+
+repeat 100000 times {
+	increment _i_;
+	output _i_ ", and counting...";
+}
+
+output "Done.";
