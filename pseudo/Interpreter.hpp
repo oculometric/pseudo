@@ -14,6 +14,9 @@
 #include "MemoryManager.hpp"
 #include "Marker.hpp"
 
+#include <chrono>
+#include <thread>
+
 using namespace std;
 
 class Interpreter {
@@ -55,6 +58,7 @@ private:
 	static void kjump (Interpreter* i);
 	static void kcall (Interpreter* i);
 	static void kfunction (Interpreter* i);
+	static void kdelay (Interpreter* i);
 	
 	void outputInternal (vector<Token> toks, Interpreter *i, int start, int end, Token outputLocation);
 	
@@ -65,7 +69,7 @@ private:
 	bool evaluate (Token tok1, Token tok2, string operatorr, Interpreter *i);
 public:
 	const vector<void (*)(Interpreter* i)> keywordFuncPointer () {
-		vector<void (*)(Interpreter* i)> v = {kincrement, kdecrement, krepeat, ktimes, kset, kto, kinput, koutput, kfrom, kwhile, kas, kcast, kif, kcall, kfunction};
+		vector<void (*)(Interpreter* i)> v = {kincrement, kdecrement, kdelay, krepeat, ktimes, kset, kto, kinput, koutput, kfrom, kwhile, kas, kcast, kif, kcall, kfunction};
 #if INCLUDE_JUMP_AND_MARKER_KWORDS
 		v.push_back (kjump);
 		v.push_back (kmarker);
@@ -91,7 +95,7 @@ int findFirstKeywordOccurrence (Token t, vector<Token> vec);
 vector<string> split (string input, char regex);
 string readEntireTextFile (string path);
 
-const vector<string> keywords = {"increment", "decrement", "repeat", "times", "set", "to", "input", "output", "from", "while", "as", "cast", "if", "call", "function",
+const vector<string> keywords = {"increment", "decrement", "delay", "repeat", "times", "set", "to", "input", "output", "from", "while", "as", "cast", "if", "call", "function",
 #if INCLUDE_JUMP_AND_MARKER_KWORDS
 	"jump", "marker"
 #endif

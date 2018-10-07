@@ -752,6 +752,15 @@ bool Interpreter::evaluate (Token tok1, Token tok2, string operatorr, Interprete
 	return false;
 }
 
+void Interpreter::kdelay (Interpreter* i) {
+	if (i->currentLineTokens.size() < 2)
+		throw runtime_error ("Expected integer literal after 'delay' keyword.");
+	if (i->currentLineTokens.at(1).type != TokenType::intLiteral)
+		throw runtime_error ("Expected integer literal after 'delay' keyword.");
+	
+	std::this_thread::sleep_for(std::chrono::milliseconds (i->currentLineTokens.at(1).intValue));
+}
+
 // The following should never be implemented
 void Interpreter::ktimes(Interpreter* i) {}
 void Interpreter::kto(Interpreter* i) {}
