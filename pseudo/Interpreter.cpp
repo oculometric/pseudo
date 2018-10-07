@@ -535,11 +535,55 @@ void Interpreter::kinput(Interpreter* i) {
 void Interpreter::kcast(Interpreter* i) {}
 
 void Interpreter::kcall(Interpreter* i) {
-	// Referenced function should be executed as shown in the repeat statement
+	// Referenced function should be executed
+	if (i->currentLineTokens.size() < 2)
+		throw runtime_error ("Keyword 'call' requires function identifier after keyword.");
+	if (i->currentLineTokens.at (1).type != TokenType::stringLiteral)
+		throw runtime_error ("Token after 'call' keyword must be a string literal.");
+	
+	if (!i->markerExists (i, i->currentLineTokens.at (1).stringValue))
+		throw runtime_error ("Unknown function identifier.");
+	
+	for (Marker mm : *i->markers)
+		if (mm.identifier == i->currentLineTokens.at (1).stringValue) {
+			if (!mm.isFunction)
+				throw runtime_error ("Cannot call to non-function marker.");
+			string lines = "";
+			for (int loc = mm.lineReference; loc <= mm.endLineReference; loc++) {
+				lines.append(i->lines.at(loc)+"\n");
+			}
+			Interpreter inter = Interpreter(lines, i->memoryManager, i->variables, i->markers);
+			inter.prepare();
+			inter.interpret();
+		}
 }
 
 void Interpreter::kfunction(Interpreter* i) {
 	// Code inside this statement should be skipped over
+	if (i->currentLineTokens.size() < 3)
+		throw runtime_error ("Expected naming token after 'function' keyword, then '{'.");
+	i->lineRef++;
+	int stillOpenBrackets = 1;
+	
+	if (i->currentLineTokens.at(1).type != TokenType::stringLiteral)
+		throw runtime_error ("Expected string literal naming token after 'function' keyword.");
+	
+	Marker m = *new Marker (i->currentLineTokens.at (1).stringValue, i->lineRef + 1);
+	while (stillOpenBrackets > 0) {
+		if (containsChar(i->lines.at(i->lineRef), '{')) {
+			stillOpenBrackets++;
+		}
+		if (containsChar(i->lines.at(i->lineRef), '}')) {
+			stillOpenBrackets--;
+		}
+		i->lineRef++;
+	}
+	m.endLineReference = i->lineRef - 2;
+	m.isFunction = true;
+	if (!i->markerExists (i, i->currentLineTokens.at (1).stringValue))
+		i->markers->push_back(m);
+	else
+		throw runtime_error ("A function already exists with this name.");
 }
 
 void Interpreter::kif(Interpreter* i) {
@@ -616,6 +660,8 @@ void Interpreter::kmarker(Interpreter* i) {
 	Marker m = *new Marker (i->currentLineTokens.at (1).stringValue, i->lineRef + 1);
 	if (!i->markerExists (i, i->currentLineTokens.at (1).stringValue))
 		i->markers->push_back(m);
+	else
+		throw runtime_error ("A marker already exists with this name.");
 }
 
 bool Interpreter::evaluate (Token tok1, Token tok2, string operatorr, Interpreter *i) {

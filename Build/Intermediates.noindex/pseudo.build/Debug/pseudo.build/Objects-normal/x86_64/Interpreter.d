@@ -1,7 +1,7 @@
 dependencies: \
-  /Users/javaxprogrammer/Desktop/pseudo/pseudo/Interpreter.cpp \
-  /Users/javaxprogrammer/Desktop/pseudo/pseudo/Interpreter.hpp \
-  /Users/javaxprogrammer/Desktop/pseudo/pseudo/Token.hpp \
-  /Users/javaxprogrammer/Desktop/pseudo/pseudo/Variable.hpp \
-  /Users/javaxprogrammer/Desktop/pseudo/pseudo/MemoryManager.hpp \
-  /Users/javaxprogrammer/Desktop/pseudo/pseudo/Marker.hpp
+  /Repository\ of\ Things/Coding/AIs/pseudo/pseudo/Interpreter.cpp \
+  /Repository\ of\ Things/Coding/AIs/pseudo/pseudo/Interpreter.hpp \
+  /Repository\ of\ Things/Coding/AIs/pseudo/pseudo/Token.hpp \
+  /Repository\ of\ Things/Coding/AIs/pseudo/pseudo/Variable.hpp \
+  /Repository\ of\ Things/Coding/AIs/pseudo/pseudo/MemoryManager.hpp \
+  /Repository\ of\ Things/Coding/AIs/pseudo/pseudo/Marker.hpp

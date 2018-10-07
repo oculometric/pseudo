@@ -1,2 +1,2 @@
-dependencies: /Users/javaxprogrammer/Desktop/pseudo/pseudo/Token.cpp \
-  /Users/javaxprogrammer/Desktop/pseudo/pseudo/Token.hpp
+dependencies: /Repository\ of\ Things/Coding/AIs/pseudo/pseudo/Token.cpp \
+  /Repository\ of\ Things/Coding/AIs/pseudo/pseudo/Token.hpp

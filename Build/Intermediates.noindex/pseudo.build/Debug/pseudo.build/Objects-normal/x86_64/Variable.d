@@ -1,2 +1,2 @@
-dependencies: /Users/javaxprogrammer/Desktop/pseudo/pseudo/Variable.cpp \
-  /Users/javaxprogrammer/Desktop/pseudo/pseudo/Variable.hpp
+dependencies: /Repository\ of\ Things/Coding/AIs/pseudo/pseudo/Variable.cpp \
+  /Repository\ of\ Things/Coding/AIs/pseudo/pseudo/Variable.hpp
