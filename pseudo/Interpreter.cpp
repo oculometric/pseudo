@@ -8,7 +8,7 @@
 
 #include "Interpreter.hpp"
 
-Variable *Interpreter::getVariable(std::string name) {
+Variable* Interpreter::getVariable(std::string name) {
 	for (int ref = 0; ref < variables->size(); ref++) {
 		if (variables->at(ref).name == name) {
 			Variable* v = &variables->at(ref);
@@ -326,6 +326,7 @@ void Interpreter::assignVariableValueInternal (string assigneeName, Token newVal
 				break;
 			case variableReference:
 				if (realNewVariableValue != NULL) {
+					assignee->type = realNewVariableValue->type;
 					if (realNewVariableValue->type == Primitive::pint) {
 						assignee->intValue = realNewVariableValue->intValue;
 					} else if (realNewVariableValue->type == Primitive::pstring) {

@@ -96,7 +96,7 @@ vector<string> split (string input, char regex);
 string readEntireTextFile (string path);
 
 const vector<string> keywords = {"increment", "decrement", "delay", "repeat", "times", "set", "to", "input", "output", "from", "while", "as", "cast", "if", "call", "function",
-#if INCLUDE_JUMP_AND_MARKER_KWORDS
+#ifdef INCLUDE_JUMP_AND_MARKER_KWORDS
 	"jump", "marker"
 #endif
 };

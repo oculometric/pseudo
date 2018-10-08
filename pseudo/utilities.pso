@@ -1,6 +1,30 @@
 set _a_ to NULL;
 set _b_ to NULL;
+set _c_ to NULL;
 
-function “add” {
-
+function "add" { // Will assign the sum of two numbers to _c_
+		set _numTimes_ to _b_;
+		set _tmp_ to _a_;
+		repeat _numTimes_ times {
+			increment _tmp_;
+		}
+		set _c_ to _tmp_;
 }
+
+function "multiply" { // Will assign the product of two numbers to _c_
+set _numTimes_ to _b_;
+set _addVal_ to _a_;
+set _tmp_ to 0;
+repeat _numTimes_ times {
+set _a_ to _tmp_;
+set _b_ to _addVal_;
+call "add"
+set _tmp_ to _c_;
+}
+set _c_ to _tmp_;
+}
+
+set _a_ to 9;
+set _b_ to 10;
+call "add";
+output +

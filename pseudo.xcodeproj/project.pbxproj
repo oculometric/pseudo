@@ -45,6 +45,7 @@
 		A8AB6BD7212E06F000ABEB05 /* code5.pso */ = {isa = PBXFileReference; lastKnownFileType = text; path = code5.pso; sourceTree = "<group>"; };
 		A8AB6BE5212EA54200ABEB05 /* Utils.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = Utils.cpp; sourceTree = "<group>"; };
 		A8AEBE562132A2A5004BA461 /* ifTest.pso */ = {isa = PBXFileReference; lastKnownFileType = text; path = ifTest.pso; sourceTree = "<group>"; };
+		A8C4C83C216BB34600B9929B /* utilities.pso */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = utilities.pso; sourceTree = "<group>"; };
 		A8E19F2E212B2462001B492E /* code4.pso */ = {isa = PBXFileReference; lastKnownFileType = text; path = code4.pso; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -78,6 +79,7 @@
 		A89F90A7211C320C002AB302 /* pseudo */ = {
 			isa = PBXGroup;
 			children = (
+				A8C4C83C216BB34600B9929B /* utilities.pso */,
 				A8E19F2E212B2462001B492E /* code4.pso */,
 				A8AB6BD7212E06F000ABEB05 /* code5.pso */,
 				A8AEBE562132A2A5004BA461 /* ifTest.pso */,
