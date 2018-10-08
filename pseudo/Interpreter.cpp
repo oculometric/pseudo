@@ -26,9 +26,35 @@ Interpreter::Interpreter (string input, MemoryManager *mm, vector<Variable> *var
 	isPrepared = false;
 }
 
+string recursiveIncludsion (string i) {
+	string mutated = i;
+	vector<string> lines = split(mutated, '\n');
+	int lineIndex = 0;
+	while (mutated.find("include") != std::string::npos) {
+		size_t lineStartIndex = lines.at(lineIndex).find("include");
+		if (lineStartIndex != std::string::npos) {
+			vector<string> line = split(lines.at (lineIndex), ' ');
+			if (line.size() < 2)
+				throw "Include statement must precede file specifier.";
+			if (line.at(0) != "include")
+				throw "Include statement must be first keyword on line.";
+			
+			string fileRead = readEntireTextFile(line.at(1));
+			mutated.replace(mutated.find("include"), string ("include").length(), fileRead);
+			lines = split(mutated, '\n');
+			lineIndex = 0;
+		} else {
+			lineIndex++;
+		}
+	}
+	return mutated;
+}
+
 void Interpreter::prepare () {
+	string includedInput = recursiveIncludsion(directInput);
+	
 	preparedInput = "";
-	for (char c : directInput) {
+	for (char c : includedInput) {
 		if (c == '\n') {
 			preparedInput += ';';
 		} else if (c == '\t') {
@@ -612,15 +638,6 @@ void Interpreter::kif(Interpreter* i) {
 		i->lineRef = end;
 		return;
 	}
-	
-//	// Execute lines
-//	i->lineRef = start;
-//	while (i->lineRef < end) {
-//		string line = i->lines.at(i->lineRef);
-//		if (line.size() > 1)
-//			i->interpretLine(line);
-//		i->lineRef++;
-//	}
 }
 
 void Interpreter::kwhile(Interpreter* i) {}

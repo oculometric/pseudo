@@ -8,6 +8,8 @@ output _testOutput_;                           // Send it to the screen
 
 delay 1000;                // Wait long enough for the user to see the output
 
+marker "loopStart";
+
 repeat 1000000 times {     // This marks where to come to if we ever want to repeat the next bit.
 	repeat _num_ times {   // Repeat the statements in brackets a certain number of times.
 		increment _value_; // Increment the value we stored.
@@ -16,4 +18,9 @@ repeat 1000000 times {     // This marks where to come to if we ever want to rep
 
 	output "We have now finished a iterating. The total was: " _value_;
 	output "Let's do that again shall we?";
+	input "Shall we do it again?" to _again_;
+	if _again_ == "yes" {
+		jump "loopStart";
+	}
 }
+
