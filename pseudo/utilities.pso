@@ -12,19 +12,46 @@ function "add" { // Will assign the sum of two numbers to _c_
 }
 
 function "multiply" { // Will assign the product of two numbers to _c_
-set _numTimes_ to _b_;
-set _addVal_ to _a_;
-set _tmp_ to 0;
-repeat _numTimes_ times {
-set _a_ to _tmp_;
-set _b_ to _addVal_;
-call "add"
-set _tmp_ to _c_;
+	set _numTimes_ to _b_;
+	set _addVal_ to _a_;
+	set _tmp_ to 0;
+	repeat _numTimes_ times {
+		set _a_ to _tmp_;
+		set _b_ to _addVal_;
+		call "add"
+		set _tmp_ to _c_;
+	}
+	set _c_ to _tmp_;
 }
-set _c_ to _tmp_;
+
+function "exponent" { // Will assign the exponent of two numbers to _c_
+	set _numTimes_ to _b_;
+	set _multiVal_ to _a_;
+	set _tmp_ to 1;
+	repeat _numTimes_ times {
+		set _a_ to _tmp_;
+		set _b_ to _multiVal_;
+		call "multiply"
+		set _tmp_ to _c_;
+	}
+	set _c_ to _tmp_;
 }
+
+output "The answers *will* be: 19, 12, 64.";
+output "Here we go...";
+delay 1500;
 
 set _a_ to 9;
 set _b_ to 10;
 call "add";
+output "The answer is: " _c_;
+
+set _a_ to 3;
+set _b_ to 4;
+call "multiply";
+output "The answer is: " _c_;
+
+set _a_ to 2;
+set _b_ to 6;
+call "exponent";
 output "The answer is: " _c_;
