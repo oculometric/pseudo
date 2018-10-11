@@ -571,7 +571,7 @@ void Interpreter::kcall(Interpreter* i) {
 	if (!i->markerExists (i, i->currentLineTokens.at (1).stringValue))
 		throw runtime_error ("Unknown function identifier.");
 	
-	for (Marker mm : *i->markers)
+	for (Marker mm : *i->markers) {
 		if (mm.identifier == i->currentLineTokens.at (1).stringValue) {
 			if (!mm.isFunction)
 				throw runtime_error ("Cannot call to non-function marker.");
@@ -583,6 +583,7 @@ void Interpreter::kcall(Interpreter* i) {
 			inter.prepare();
 			inter.interpret();
 		}
+	}
 }
 
 void Interpreter::kfunction(Interpreter* i) {
@@ -595,7 +596,7 @@ void Interpreter::kfunction(Interpreter* i) {
 	if (i->currentLineTokens.at(1).type != TokenType::stringLiteral)
 		throw runtime_error ("Expected string literal naming token after 'function' keyword.");
 	
-	Marker m = *new Marker (i->currentLineTokens.at (1).stringValue, i->lineRef + 1);
+	Marker m = *new Marker (i->currentLineTokens.at (1).stringValue, i->lineRef);
 	while (stillOpenBrackets > 0) {
 		if (containsChar(i->lines.at(i->lineRef), '{')) {
 			stillOpenBrackets++;
