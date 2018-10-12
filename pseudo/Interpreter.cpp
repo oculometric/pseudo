@@ -26,9 +26,9 @@ Interpreter::Interpreter (string input, MemoryManager *mm, vector<Variable> *var
 	isPrepared = false;
 }
 
-string recursiveIncludsion (string i) {
+string recursiveInclusion (string i) {
 	string mutated = i;
-	vector<string> lines = split(mutated, '\n');
+	vector<string> lines = split(mutated, ';');
 	int lineIndex = 0;
 	while (mutated.find("include") != std::string::npos) {
 		size_t lineStartIndex = lines.at(lineIndex).find("include");
@@ -39,8 +39,8 @@ string recursiveIncludsion (string i) {
 			if (line.at(0) != "include")
 				throw "Include statement must be first keyword on line.";
 			
-			string fileRead = readEntireTextFile(line.at(1));
-			mutated.replace(mutated.find("include"), string ("include").length(), fileRead);
+			string fileRead = readEntireTextFile(replaceAll(replaceAll(line.at(1), "\\_", " "), "\"", ""));
+			mutated.replace(mutated.find("include"), string ("include").length() + line.at(1).length() + 1, fileRead);
 			lines = split(mutated, '\n');
 			lineIndex = 0;
 		} else {
@@ -51,10 +51,10 @@ string recursiveIncludsion (string i) {
 }
 
 void Interpreter::prepare () {
-	string includedInput = recursiveIncludsion(directInput);
+	
 	
 	preparedInput = "";
-	for (char c : includedInput) {
+	for (char c : directInput) {
 		if (c == '\n') {
 			preparedInput += ';';
 		} else if (c == '\t') {
@@ -75,6 +75,12 @@ void Interpreter::prepare () {
 			} else {
 				preparedInput += parts.at(loc);
 			}
+	}
+	
+	string includedInput = recursiveInclusion(preparedInput);
+	if (includedInput != directInput) {
+		directInput = includedInput;
+		prepare();
 	}
 	
 	lineRef = 0;
@@ -218,7 +224,7 @@ Token Interpreter::makeToken (string tokenInput) {
 	} else if (containsString(keywords, tokenInput)) {   // Keyword
 		return Token (tokenInput, 0, false, 0, "", TokenType::keyword);
 	} // Undefined, syntax error.
-	throw runtime_error ("Invalid keyword '" + tokenInput + "'.");
+ 	throw runtime_error ("Invalid keyword '" + tokenInput + "'.");
 }
 
 void Interpreter::kincrement(Interpreter* i) {

@@ -36,5 +36,3 @@ function "exponent" { // Will assign the exponent of two numbers to _c_
 	}
 	set _c_ to _tmp_;
 }
-
-

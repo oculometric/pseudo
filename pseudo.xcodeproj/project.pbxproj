@@ -46,6 +46,7 @@
 		A8AB6BE5212EA54200ABEB05 /* Utils.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = Utils.cpp; sourceTree = "<group>"; };
 		A8AEBE562132A2A5004BA461 /* ifTest.pso */ = {isa = PBXFileReference; lastKnownFileType = text; path = ifTest.pso; sourceTree = "<group>"; };
 		A8C4C83C216BB34600B9929B /* utilities.pso */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = utilities.pso; sourceTree = "<group>"; };
+		A8CA42492170FDC5000079C9 /* demo.pso */ = {isa = PBXFileReference; lastKnownFileType = text; path = demo.pso; sourceTree = "<group>"; };
 		A8E19F2E212B2462001B492E /* code4.pso */ = {isa = PBXFileReference; lastKnownFileType = text; path = code4.pso; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -82,6 +83,7 @@
 				A8C4C83C216BB34600B9929B /* utilities.pso */,
 				A8E19F2E212B2462001B492E /* code4.pso */,
 				A8AB6BD7212E06F000ABEB05 /* code5.pso */,
+				A8CA42492170FDC5000079C9 /* demo.pso */,
 				A8AEBE562132A2A5004BA461 /* ifTest.pso */,
 				A8A76F092134A9BA0059BF34 /* loopTest.pso */,
 				A89F90A8211C320C002AB302 /* main.cpp */,
