@@ -428,14 +428,20 @@ void Interpreter::krepeat(Interpreter* i) {
 	}
 	
 	int start = i->lineRef + 1;
-	int end = i->lineRef+1;
-	
+	int end = i->lineRef;
+	int bracketCount = 0;
 	while (end < i->lines.size()) {
-		if ((i->lines.at (end).size() > 0) && (i->lines.at (end)).at(0) == '}') {
+		if ((i->lines.at (end).size() > 0) && (i->lines.at (end)).at(0) == '}')
+			bracketCount--;
+		if (containsChar(i->lines.at(end), '{'))
+			bracketCount++;
+		
+		if (bracketCount == 0)
 			break;
-		}
+			
 		end++;
 	}
+	//end--;
 	
 	// Execute lines
 	while (numTimes > 0) {
@@ -581,13 +587,18 @@ void Interpreter::kcall(Interpreter* i) {
 		if (mm.identifier == i->currentLineTokens.at (1).stringValue) {
 			if (!mm.isFunction)
 				throw runtime_error ("Cannot call to non-function marker.");
-			string lines = "";
-			for (int loc = mm.lineReference; loc <= mm.endLineReference; loc++) {
-				lines.append(i->lines.at(loc)+"\n");
+			
+			int jumpBackRef = i->lineRef;
+			// Execute lines
+			i->lineRef = mm.lineReference;
+			while (i->lineRef <= mm.endLineReference) {
+				string line = i->lines.at(i->lineRef);
+				if (line.size() > 1)
+					i->interpretLine(line);
+				i->lineRef++;
 			}
-			Interpreter inter = Interpreter(lines, i->memoryManager, i->variables, i->markers);
-			inter.prepare();
-			inter.interpret();
+			
+			i->lineRef = jumpBackRef + 1;
 		}
 	}
 }
