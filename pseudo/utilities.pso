@@ -15,9 +15,7 @@ function "multiply" { // Will assign the product of two numbers to _c_
 	set _numTimes_ to _b_;
 	set _addVal_ to _a_;
 	set _tmp_ to 0;
-	output "We got this far";
 	repeat _numTimes_ times {
-		output "Began loop iteration...";
 		set _a_ to _tmp_;
 		set _b_ to _addVal_;
 		call "add"
