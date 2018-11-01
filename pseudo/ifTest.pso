@@ -1,7 +1,7 @@
 set _value1_ to 5;
 set _value2_ to 5;
 
-if _value1_ == _value2_ {
+if _value1_ == 5 {
 	output "They equal!";
 }
 

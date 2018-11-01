@@ -22,7 +22,7 @@ int main(int argc, const char * argv[]) {
 	vector<Variable> variables;
 	vector<Marker> markers;
 #ifdef DEBUG
-	string codeFile = "/Repository of Things/Coding/AIs/pseudo/pseudo/demo.pso";
+	string codeFile = "/Repository of Things/Coding/AIs/pseudo/pseudo/code5.pso";
 	Interpreter inter = Interpreter(readEntireTextFile(codeFile), &mm, &variables, &markers);
 #else
 	Interpreter inter = Interpreter(readEntireTextFile(argv[1]), &mm, &variables, &markers);
